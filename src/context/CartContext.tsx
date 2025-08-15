@@ -148,7 +148,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (item: SeriesCartItem) => {
     const price = calculateItemPrice(item);
-    const itemWithDefaults = { ...item, paymentType: 'cash' as const };
+    const itemWithDefaults = { 
+      ...item, 
+      paymentType: 'cash' as const,
+      selectedSeasons: item.type === 'tv' && !item.selectedSeasons ? [1] : item.selectedSeasons
+    };
     dispatch({ type: 'ADD_ITEM', payload: itemWithDefaults });
     
     // Mostrar notificación

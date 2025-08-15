@@ -96,33 +96,22 @@ export function TVDetail() {
   const isAddToCartEnabled = () => {
     if (!tvShow) return false;
     
-    // Si solo tiene una temporada (excluyendo especiales), habilitar automáticamente
     const validSeasons = tvShow.seasons.filter(season => season.season_number > 0);
-    if (validSeasons.length === 1) {
-      // Auto-seleccionar la única temporada si no hay ninguna seleccionada
-      if (selectedSeasons.length === 0) {
-        setSelectedSeasons([validSeasons[0].season_number]);
-      }
-      return true;
-    }
     
-    // Si tiene múltiples temporadas, requiere selección manual
-    return selectedSeasons.length > 0;
+    // Siempre habilitar el botón - si no hay temporadas seleccionadas, se seleccionará la primera automáticamente
+    return validSeasons.length > 0;
   };
 
   const handleCartAction = () => {
     if (!tvShow) return;
 
-    // Si no hay temporadas seleccionadas y hay múltiples temporadas, no permitir agregar
     const validSeasons = tvShow.seasons.filter(season => season.season_number > 0);
-    if (validSeasons.length > 1 && selectedSeasons.length === 0) {
-      alert('Por favor selecciona al menos una temporada antes de agregar al carrito.');
-      return;
-    }
-
-    // Si solo hay una temporada y no está seleccionada, seleccionarla automáticamente
-    if (validSeasons.length === 1 && selectedSeasons.length === 0) {
-      setSelectedSeasons([validSeasons[0].season_number]);
+    
+    // Si no hay temporadas seleccionadas, seleccionar la primera por defecto
+    let seasonsToAdd = selectedSeasons;
+    if (selectedSeasons.length === 0 && validSeasons.length > 0) {
+      seasonsToAdd = [1];
+      setSelectedSeasons([1]);
     }
 
     const cartItem: CartItem & { selectedSeasons?: number[] } = {
@@ -132,7 +121,7 @@ export function TVDetail() {
       type: 'tv',
       first_air_date: tvShow.first_air_date,
       vote_average: tvShow.vote_average,
-      selectedSeasons: selectedSeasons.length > 0 ? selectedSeasons : (validSeasons.length === 1 ? [validSeasons[0].season_number] : undefined),
+      selectedSeasons: seasonsToAdd,
     };
 
     if (inCart) {
@@ -157,13 +146,14 @@ export function TVDetail() {
 
   // Auto-seleccionar la única temporada si solo hay una
   useEffect(() => {
-    if (tvShow && !inCart) {
+    if (tvShow && !inCart && selectedSeasons.length === 0) {
       const validSeasons = tvShow.seasons.filter(season => season.season_number > 0);
-      if (validSeasons.length === 1 && selectedSeasons.length === 0) {
-        setSelectedSeasons([validSeasons[0].season_number]);
+      if (validSeasons.length >= 1) {
+        // Siempre seleccionar la primera temporada por defecto
+        setSelectedSeasons([1]);
       }
     }
-  }, [tvShow, inCart, selectedSeasons.length]);
+  }, [tvShow, inCart]);
 
   if (loading) {
     return (
@@ -455,11 +445,6 @@ export function TVDetail() {
                     <X className="mr-2 h-5 w-5" />
                     Retirar del Carrito
                   </>
-                ) : !isAddToCartEnabled() && hasMultipleSeasons ? (
-                  <>
-                    <Plus className="mr-2 h-5 w-5" />
-                    Selecciona Temporadas
-                  </>
                 ) : (
                   <>
                     <Plus className="mr-2 h-5 w-5" />
@@ -468,11 +453,11 @@ export function TVDetail() {
                 )}
               </button>
 
-              {/* Mensaje de ayuda para selección de temporadas */}
-              {!isAddToCartEnabled() && hasMultipleSeasons && (
-                <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-700 text-center">
-                    ⚠️ Selecciona al menos una temporada para agregar al carrito
+              {/* Mensaje informativo sobre selección automática */}
+              {hasMultipleSeasons && selectedSeasons.length === 0 && !inCart && (
+                <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700 text-center">
+                    ℹ️ Se agregará la primera temporada por defecto. Puedes seleccionar más temporadas arriba.
                   </p>
                 </div>
               )}
