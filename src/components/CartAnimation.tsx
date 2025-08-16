@@ -112,18 +112,3 @@ export function CartAnimation({ show, onComplete }: CartAnimationProps) {
     </div>
   );
 }
-
-          </div>
-        </div>
-      )}
-      
-      {stage === 'success' && (
-        <div className="animate-ping">
-          <div className="bg-green-600 text-white p-6 rounded-full shadow-2xl">
-            <Check className="h-10 w-10" />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
