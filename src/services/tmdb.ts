@@ -91,6 +91,19 @@ class TMDBService {
     const encodedQuery = encodeURIComponent(query);
     return this.fetchData(`/search/multi?query=${encodedQuery}&language=es-ES&page=${page}`);
   }
+
+  // Trending content
+  async getTrendingAll(timeWindow: 'day' | 'week' = 'day', page: number = 1): Promise<APIResponse<Movie | TVShow>> {
+    return this.fetchData(`/trending/all/${timeWindow}?language=es-ES&page=${page}`);
+  }
+
+  async getTrendingMovies(timeWindow: 'day' | 'week' = 'day', page: number = 1): Promise<APIResponse<Movie>> {
+    return this.fetchData(`/trending/movie/${timeWindow}?language=es-ES&page=${page}`);
+  }
+
+  async getTrendingTV(timeWindow: 'day' | 'week' = 'day', page: number = 1): Promise<APIResponse<TVShow>> {
+    return this.fetchData(`/trending/tv/${timeWindow}?language=es-ES&page=${page}`);
+  }
 }
 
 export const tmdbService = new TMDBService();

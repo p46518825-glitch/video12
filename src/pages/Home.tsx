@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, TrendingUp, Star, Tv } from 'lucide-react';
+import { ChevronRight, TrendingUp, Star, Tv, Filter, Calendar, Clock } from 'lucide-react';
 import { tmdbService } from '../services/tmdb';
 import { MovieCard } from '../components/MovieCard';
 import { HeroCarousel } from '../components/HeroCarousel';
@@ -8,33 +8,53 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
 import type { Movie, TVShow } from '../types/movie';
 
+type TrendingTimeWindow = 'day' | 'week';
+
 export function Home() {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [popularTVShows, setPopularTVShows] = useState<TVShow[]>([]);
   const [popularAnime, setPopularAnime] = useState<TVShow[]>([]);
+  const [trendingContent, setTrendingContent] = useState<(Movie | TVShow)[]>([]);
   const [heroItems, setHeroItems] = useState<(Movie | TVShow)[]>([]);
+  const [trendingTimeWindow, setTrendingTimeWindow] = useState<TrendingTimeWindow>('day');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const timeWindowLabels = {
+    day: 'Hoy',
+    week: 'Esta Semana'
+  };
+
+  const fetchTrendingContent = async (timeWindow: TrendingTimeWindow) => {
+    try {
+      const response = await tmdbService.getTrendingAll(timeWindow, 1);
+      setTrendingContent(response.results.slice(0, 12));
+    } catch (err) {
+      console.error('Error fetching trending content:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [moviesRes, tvRes, animeRes] = await Promise.all([
+        const [moviesRes, tvRes, animeRes, trendingRes] = await Promise.all([
           tmdbService.getPopularMovies(1),
           tmdbService.getPopularTVShows(1),
-          tmdbService.getPopularAnime(1)
+          tmdbService.getPopularAnime(1),
+          tmdbService.getTrendingAll('day', 1)
         ]);
 
         setPopularMovies(moviesRes.results.slice(0, 8));
         setPopularTVShows(tvRes.results.slice(0, 8));
         setPopularAnime(animeRes.results.slice(0, 8));
+        setTrendingContent(trendingRes.results.slice(0, 12));
         
         // Combinar los mejores elementos para el carrusel
-        const topMovies = moviesRes.results.slice(0, 3);
-        const topTVShows = tvRes.results.slice(0, 3);
-        const topAnime = animeRes.results.slice(0, 2);
-        setHeroItems([...topMovies, ...topTVShows, ...topAnime]);
+        const topTrending = trendingRes.results.slice(0, 5);
+        const topMovies = moviesRes.results.slice(0, 2);
+        const topTVShows = tvRes.results.slice(0, 2);
+        setHeroItems([...topTrending, ...topMovies, ...topTVShows]);
       } catch (err) {
         setError('Error al cargar el contenido. Por favor, intenta de nuevo.');
         console.error('Error fetching home data:', err);
@@ -45,6 +65,18 @@ export function Home() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchTrendingContent(trendingTimeWindow);
+  }, [trendingTimeWindow]);
+
+  // Auto-refresh trending content daily
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTrendingContent(trendingTimeWindow);
+    }, 24 * 60 * 60 * 1000); // 24 hours
+    return () => clearInterval(interval);
+  }, [trendingTimeWindow]);
 
   if (loading) {
     return (
@@ -99,6 +131,53 @@ export function Home() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Trending Content */}
+        <section className="mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+              <TrendingUp className="mr-2 h-6 w-6 text-red-500" />
+              Tendencias
+            </h2>
+            
+            {/* Trending Filter */}
+            <div className="flex items-center space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+              <Filter className="h-4 w-4 text-gray-500 ml-2" />
+              <span className="text-sm font-medium text-gray-700 px-2">Tendencias:</span>
+              {Object.entries(timeWindowLabels).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setTrendingTimeWindow(key as TrendingTimeWindow)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 flex items-center ${
+                    trendingTimeWindow === key
+                      ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-md transform scale-105'
+                      : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                  }`}
+                >
+                  {key === 'day' ? <Calendar className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-4 mb-6 border border-red-100">
+            <p className="text-sm text-red-700 text-center flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Contenido más popular {trendingTimeWindow === 'day' ? 'de hoy' : 'de esta semana'} según TMDB
+              <span className="ml-2 animate-pulse">🔥</span>
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {trendingContent.map((item) => {
+              const itemType = 'title' in item ? 'movie' : 'tv';
+              return (
+                <MovieCard key={`trending-${itemType}-${item.id}`} item={item} type={itemType} />
+              );
+            })}
+          </div>
+        </section>
+
         {/* Popular Movies */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">

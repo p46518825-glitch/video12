@@ -64,4 +64,14 @@
   button img, a img, [role="button"] img, .clickable img {
     pointer-events: none;
   }
+  
+  /* Custom animations */
+  @keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+  
+  .animate-shrink {
+    animation: shrink 3s linear forwards;
+  }
 }
