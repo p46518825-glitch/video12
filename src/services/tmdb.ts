@@ -1,10 +1,12 @@
-import { BASE_URL, API_OPTIONS } from '../config/api';
-import type { Movie, TVShow, MovieDetails, TVShowDetails, Video, APIResponse, Genre } from '../types/movie';
+import { BASE_URL, API_OPTIONS, API_KEY } from '../config/api';
+import type { Movie, TVShow, MovieDetails, TVShowDetails, Video, APIResponse, Genre, Cast, CastMember } from '../types/movie';
 
 class TMDBService {
   private async fetchData<T>(endpoint: string): Promise<T> {
     try {
-      const response = await fetch(`${BASE_URL}${endpoint}`, API_OPTIONS);
+      const separator = endpoint.includes('?') ? '&' : '?';
+      const url = `${BASE_URL}${endpoint}${separator}api_key=${API_KEY}`;
+      const response = await fetch(url, API_OPTIONS);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -41,6 +43,10 @@ class TMDBService {
     return this.fetchData(`/movie/${id}/videos?language=es-ES`);
   }
 
+  async getMovieCredits(id: number): Promise<Cast> {
+    return this.fetchData(`/movie/${id}/credits?language=es-ES`);
+  }
+
   // TV Shows
   async getPopularTVShows(page: number = 1): Promise<APIResponse<TVShow>> {
     return this.fetchData(`/tv/popular?language=es-ES&page=${page}`);
@@ -61,6 +67,10 @@ class TMDBService {
 
   async getTVShowVideos(id: number): Promise<{ results: Video[] }> {
     return this.fetchData(`/tv/${id}/videos?language=es-ES`);
+  }
+
+  async getTVShowCredits(id: number): Promise<Cast> {
+    return this.fetchData(`/tv/${id}/credits?language=es-ES`);
   }
 
   // Anime (using discover with Japanese origin)
@@ -92,7 +102,7 @@ class TMDBService {
     return this.fetchData(`/search/multi?query=${encodedQuery}&language=es-ES&page=${page}`);
   }
 
-  // Trending content
+  // Trending content - synchronized with TMDB
   async getTrendingAll(timeWindow: 'day' | 'week' = 'day', page: number = 1): Promise<APIResponse<Movie | TVShow>> {
     return this.fetchData(`/trending/all/${timeWindow}?language=es-ES&page=${page}`);
   }
@@ -103,6 +113,44 @@ class TMDBService {
 
   async getTrendingTV(timeWindow: 'day' | 'week' = 'day', page: number = 1): Promise<APIResponse<TVShow>> {
     return this.fetchData(`/trending/tv/${timeWindow}?language=es-ES&page=${page}`);
+  }
+
+  // Utility method to remove duplicates from combined results
+  removeDuplicates<T extends { id: number }>(items: T[]): T[] {
+    const seen = new Set<number>();
+    return items.filter(item => {
+      if (seen.has(item.id)) {
+        return false;
+      }
+      seen.add(item.id);
+      return true;
+    });
+  }
+
+  // Get fresh trending content for hero carousel (no duplicates)
+  async getHeroContent(): Promise<(Movie | TVShow)[]> {
+    try {
+      const [trendingDay, trendingWeek, popularMovies, popularTV] = await Promise.all([
+        this.getTrendingAll('day', 1),
+        this.getTrendingAll('week', 1),
+        this.getPopularMovies(1),
+        this.getPopularTVShows(1)
+      ]);
+
+      // Combine and prioritize trending content
+      const combinedItems = [
+        ...trendingDay.results.slice(0, 8),
+        ...trendingWeek.results.slice(0, 4),
+        ...popularMovies.results.slice(0, 3),
+        ...popularTV.results.slice(0, 3)
+      ];
+
+      // Remove duplicates and return top items
+      return this.removeDuplicates(combinedItems).slice(0, 10);
+    } catch (error) {
+      console.error('Error fetching hero content:', error);
+      return [];
+    }
   }
 }
 
