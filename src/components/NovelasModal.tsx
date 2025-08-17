@@ -1,120 +1,6 @@
-// Archivo generado automáticamente el 2025-08-17T16:37:05.196Z
-// NovelasModal con configuración actual aplicada
-
 import React, { useState, useEffect } from 'react';
 import { X, Download, MessageCircle, Phone, BookOpen, Info, Check, DollarSign, CreditCard, Calculator } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
-
-// Catálogo de novelas actual aplicado
-const CURRENT_NOVELAS_CATALOG = [
-  {
-    "id": 1,
-    "titulo": "Corazón Salvaje 234",
-    "genero": "Drama/Romance",
-    "capitulos": 185,
-    "año": 2009,
-    "costoEfectivo": 925,
-    "costoTransferencia": 1018,
-    "descripcion": "Una apasionante historia de amor y venganza"
-  },
-  {
-    "id": 2,
-    "titulo": "La Usurpadora",
-    "genero": "Drama/Melodrama",
-    "capitulos": 98,
-    "año": 1998,
-    "costoEfectivo": 490,
-    "costoTransferencia": 539,
-    "descripcion": "La historia de dos mujeres idénticas con destinos opuestos"
-  },
-  {
-    "id": 3,
-    "titulo": "María la del Barrio",
-    "genero": "Drama/Romance",
-    "capitulos": 73,
-    "año": 1995,
-    "costoEfectivo": 365,
-    "costoTransferencia": 402,
-    "descripcion": "Una joven humilde que conquista el corazón de un millonario"
-  },
-  {
-    "id": 4,
-    "titulo": "Marimar",
-    "genero": "Drama/Romance",
-    "capitulos": 63,
-    "año": 1994,
-    "costoEfectivo": 315,
-    "costoTransferencia": 347,
-    "descripcion": "La transformación de una joven de la playa en una mujer sofisticada"
-  },
-  {
-    "id": 5,
-    "titulo": "Rosalinda",
-    "genero": "Drama/Romance",
-    "capitulos": 80,
-    "año": 1999,
-    "costoEfectivo": 400,
-    "costoTransferencia": 440,
-    "descripcion": "Una historia de amor que supera las diferencias sociales"
-  },
-  {
-    "id": 6,
-    "titulo": "La Madrastra",
-    "genero": "Drama/Suspenso",
-    "capitulos": 135,
-    "año": 2005,
-    "costoEfectivo": 675,
-    "costoTransferencia": 743,
-    "descripcion": "Una mujer lucha por demostrar su inocencia"
-  },
-  {
-    "id": 7,
-    "titulo": "Rubí",
-    "genero": "Drama/Melodrama",
-    "capitulos": 115,
-    "año": 2004,
-    "costoEfectivo": 575,
-    "costoTransferencia": 633,
-    "descripcion": "La ambición desmedida de una mujer hermosa"
-  },
-  {
-    "id": 8,
-    "titulo": "Pasión de Gavilanes",
-    "genero": "Drama/Romance",
-    "capitulos": 188,
-    "año": 2003,
-    "costoEfectivo": 940,
-    "costoTransferencia": 1034,
-    "descripcion": "Tres hermanos buscan venganza pero encuentran el amor"
-  },
-  {
-    "id": 9,
-    "titulo": "Yo Soy Betty, la Fea",
-    "genero": "Comedia/Romance",
-    "capitulos": 335,
-    "año": 1999,
-    "costoEfectivo": 1675,
-    "costoTransferencia": 1843,
-    "descripcion": "La transformación de una secretaria en una mujer exitosa"
-  },
-  {
-    "id": 10,
-    "titulo": "El Cuerpo del Deseo",
-    "genero": "Drama/Fantasía",
-    "capitulos": 178,
-    "año": 2005,
-    "costoEfectivo": 890,
-    "costoTransferencia": 979,
-    "descripcion": "Una historia sobrenatural de amor y reencarnación"
-  }
-];
-
-// Configuración de precios actual
-const CURRENT_PRICING_CONFIG = {
-  "moviePrice": 90,
-  "seriesPrice": 350,
-  "transferFeePercentage": 15
-};
 
 interface Novela {
   id: number;
@@ -132,18 +18,17 @@ interface NovelasModalProps {
 }
 
 export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
-  const { getCurrentConfig } = useAdmin();
-  
-  // Obtener configuración actual del admin
-  const currentConfig = getCurrentConfig();
-  
+  const { state: adminState, getCurrentConfig } = useAdmin();
   const [selectedNovelas, setSelectedNovelas] = useState<number[]>([]);
   const [novelasWithPayment, setNovelasWithPayment] = useState<Novela[]>([]);
   const [showContactOptions, setShowContactOptions] = useState(false);
   const [showNovelList, setShowNovelList] = useState(false);
 
-  // Usar catálogo actual aplicado
-  const novelas: Novela[] = CURRENT_NOVELAS_CATALOG.map(novela => ({
+  // Obtener configuración actual del admin (sincronizada)
+  const currentConfig = getCurrentConfig();
+  
+  // Obtener novelas desde configuración actual aplicada
+  const novelas: Novela[] = currentConfig.novelas.map(novela => ({
     id: novela.id,
     titulo: novela.titulo,
     genero: novela.genero,
@@ -191,7 +76,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     setSelectedNovelas([]);
   };
 
-  // Calcular totales usando configuración actual
+  // Calcular totales por tipo de pago usando configuración actual
   const calculateTotals = () => {
     const selectedNovelasData = novelasWithPayment.filter(n => selectedNovelas.includes(n.id));
     
@@ -199,17 +84,17 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     const transferNovelas = selectedNovelasData.filter(n => n.paymentType === 'transfer');
     
     const cashTotal = cashNovelas.reduce((sum, n) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === n.id);
+      const novelaConfig = currentConfig.novelas.find(config => config.id === n.id);
       return sum + (novelaConfig?.costoEfectivo || n.capitulos * 5);
     }, 0);
     
     const transferTotal = transferNovelas.reduce((sum, n) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === n.id);
-      return sum + (novelaConfig?.costoTransferencia || Math.round((n.capitulos * 5) * (1 + CURRENT_PRICING_CONFIG.transferFeePercentage / 100)));
+      const novelaConfig = currentConfig.novelas.find(config => config.id === n.id);
+      return sum + (novelaConfig?.costoTransferencia || Math.round((n.capitulos * 5) * (1 + currentConfig.pricing.transferFeePercentage / 100)));
     }, 0);
     
     const transferBaseTotal = transferNovelas.reduce((sum, n) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === n.id);
+      const novelaConfig = currentConfig.novelas.find(config => config.id === n.id);
       return sum + (novelaConfig?.costoEfectivo || n.capitulos * 5);
     }, 0);
     
@@ -243,7 +128,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     listText += "═══════════════════════════════════\n\n";
     
     novelas.forEach((novela, index) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
+      const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
       const baseCost = novelaConfig?.costoEfectivo || novela.capitulos * 5;
       listText += `${index + 1}. ${novela.titulo}\n`;
       listText += `   📺 Género: ${novela.genero}\n`;
@@ -252,20 +137,20 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
       listText += `   💰 Costo en efectivo: $${baseCost.toLocaleString()} CUP\n\n`;
     });
     
-    listText += `\n🏦 PRECIOS CON TRANSFERENCIA BANCARIA (+${CURRENT_PRICING_CONFIG.transferFeePercentage}%):\n`;
+    listText += `\n🏦 PRECIOS CON TRANSFERENCIA BANCARIA (+${currentConfig.pricing.transferFeePercentage}%):\n`;
     listText += "═══════════════════════════════════\n\n";
     
     novelas.forEach((novela, index) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
+      const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
       const baseCost = novelaConfig?.costoEfectivo || novela.capitulos * 5;
-      const transferCost = novelaConfig?.costoTransferencia || Math.round(baseCost * (1 + CURRENT_PRICING_CONFIG.transferFeePercentage / 100));
+      const transferCost = novelaConfig?.costoTransferencia || Math.round(baseCost * (1 + currentConfig.pricing.transferFeePercentage / 100));
       const recargo = transferCost - baseCost;
       listText += `${index + 1}. ${novela.titulo}\n`;
       listText += `   📺 Género: ${novela.genero}\n`;
       listText += `   📊 Capítulos: ${novela.capitulos}\n`;
       listText += `   📅 Año: ${novela.año}\n`;
       listText += `   💰 Costo base: $${baseCost.toLocaleString()} CUP\n`;
-      listText += `   💳 Recargo (${CURRENT_PRICING_CONFIG.transferFeePercentage}%): +$${recargo.toLocaleString()} CUP\n`;
+      listText += `   💳 Recargo (${currentConfig.pricing.transferFeePercentage}%): +$${recargo.toLocaleString()} CUP\n`;
       listText += `   💰 Costo con transferencia: $${transferCost.toLocaleString()} CUP\n\n`;
     });
     
@@ -274,12 +159,12 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     
     const totalCapitulos = novelas.reduce((sum, novela) => sum + novela.capitulos, 0);
     const totalEfectivo = novelas.reduce((sum, novela) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
+      const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
       return sum + (novelaConfig?.costoEfectivo || novela.capitulos * 5);
     }, 0);
     const totalTransferencia = novelas.reduce((sum, novela) => {
-      const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
-      return sum + (novelaConfig?.costoTransferencia || Math.round((novela.capitulos * 5) * (1 + CURRENT_PRICING_CONFIG.transferFeePercentage / 100)));
+      const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
+      return sum + (novelaConfig?.costoTransferencia || Math.round((novela.capitulos * 5) * (1 + currentConfig.pricing.transferFeePercentage / 100)));
     }, 0);
     const totalRecargo = totalTransferencia - totalEfectivo;
     
@@ -289,13 +174,13 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     listText += `   💰 Costo total: $${totalEfectivo.toLocaleString()} CUP\n\n`;
     listText += `🏦 CATÁLOGO COMPLETO CON TRANSFERENCIA:\n`;
     listText += `   💰 Costo base: $${totalEfectivo.toLocaleString()} CUP\n`;
-    listText += `   💳 Recargo total (${CURRENT_PRICING_CONFIG.transferFeePercentage}%): +$${totalRecargo.toLocaleString()} CUP\n`;
+    listText += `   💳 Recargo total (${currentConfig.pricing.transferFeePercentage}%): +$${totalRecargo.toLocaleString()} CUP\n`;
     listText += `   💰 Costo total con transferencia: $${totalTransferencia.toLocaleString()} CUP\n\n`;
     
     listText += "═══════════════════════════════════\n";
     listText += "💡 INFORMACIÓN IMPORTANTE:\n";
     listText += "• Los precios en efectivo no tienen recargo adicional\n";
-    listText += `• Las transferencias bancarias tienen un ${CURRENT_PRICING_CONFIG.transferFeePercentage}% de recargo\n`;
+    listText += `• Las transferencias bancarias tienen un ${currentConfig.pricing.transferFeePercentage}% de recargo\n`;
     listText += "• Puedes seleccionar novelas individuales o el catálogo completo\n";
     listText += "• Todos los precios están en pesos cubanos (CUP)\n\n";
     listText += "📞 Para encargar, contacta al +5354690878\n";
@@ -333,7 +218,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
       message += "💵 PAGO EN EFECTIVO:\n";
       message += "═══════════════════════════════════\n";
       cashNovelas.forEach((novela, index) => {
-        const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
+        const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
         const costo = novelaConfig?.costoEfectivo || novela.capitulos * 5;
         message += `${index + 1}. ${novela.titulo}\n`;
         message += `   📺 Género: ${novela.genero}\n`;
@@ -347,23 +232,23 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     
     // Novelas por transferencia
     if (transferNovelas.length > 0) {
-      message += `🏦 PAGO POR TRANSFERENCIA BANCARIA (+${CURRENT_PRICING_CONFIG.transferFeePercentage}%):\n`;
+      message += `🏦 PAGO POR TRANSFERENCIA BANCARIA (+${currentConfig.pricing.transferFeePercentage}%):\n`;
       message += "═══════════════════════════════════\n";
       transferNovelas.forEach((novela, index) => {
-        const novelaConfig = CURRENT_NOVELAS_CATALOG.find(config => config.id === novela.id);
+        const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
         const baseCost = novelaConfig?.costoEfectivo || novela.capitulos * 5;
-        const totalCost = novelaConfig?.costoTransferencia || Math.round(baseCost * (1 + CURRENT_PRICING_CONFIG.transferFeePercentage / 100));
+        const totalCost = novelaConfig?.costoTransferencia || Math.round(baseCost * (1 + currentConfig.pricing.transferFeePercentage / 100));
         const fee = totalCost - baseCost;
         message += `${index + 1}. ${novela.titulo}\n`;
         message += `   📺 Género: ${novela.genero}\n`;
         message += `   📊 Capítulos: ${novela.capitulos}\n`;
         message += `   📅 Año: ${novela.año}\n`;
         message += `   💰 Costo base: $${baseCost.toLocaleString()} CUP\n`;
-        message += `   💳 Recargo (${CURRENT_PRICING_CONFIG.transferFeePercentage}%): +$${fee.toLocaleString()} CUP\n`;
+        message += `   💳 Recargo (${currentConfig.pricing.transferFeePercentage}%): +$${fee.toLocaleString()} CUP\n`;
         message += `   💰 Costo total: $${totalCost.toLocaleString()} CUP\n\n`;
       });
       message += `💰 Subtotal base transferencia: $${transferBaseTotal.toLocaleString()} CUP\n`;
-      message += `💳 Recargo total (${CURRENT_PRICING_CONFIG.transferFeePercentage}%): +$${transferFee.toLocaleString()} CUP\n`;
+      message += `💳 Recargo total (${currentConfig.pricing.transferFeePercentage}%): +$${transferFee.toLocaleString()} CUP\n`;
       message += `💰 Subtotal Transferencia: $${transferTotal.toLocaleString()} CUP\n`;
       message += `📊 Total capítulos: ${transferNovelas.reduce((sum, n) => sum + n.capitulos, 0)}\n\n`;
     }
@@ -404,7 +289,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden shadow-2xl animate-in fade-in duration-300">
-        {/* Header con información de configuración actual */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-pink-600 to-purple-600 p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -414,7 +299,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold">Catálogo de Novelas</h2>
                 <p className="text-sm sm:text-base opacity-90">
-                  ${novelas.length} novelas disponibles | Transferencia +${CURRENT_PRICING_CONFIG.transferFeePercentage}%
+                  {novelas.length} novelas disponibles | Transferencia +{currentConfig.pricing.transferFeePercentage}%
                 </p>
               </div>
             </div>
@@ -429,66 +314,283 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
 
         <div className="overflow-y-auto max-h-[calc(95vh-120px)]">
           <div className="p-4 sm:p-6">
-            {/* Información de configuración actual aplicada */}
+            {/* Información Principal */}
             <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-pink-200">
               <div className="flex items-center mb-4">
                 <div className="bg-pink-100 p-3 rounded-xl mr-4">
                   <Info className="h-6 w-6 text-pink-600" />
                 </div>
-                <h3 className="text-xl font-bold text-pink-900">Catálogo con Configuración Actual Aplicada</h3>
+                <h3 className="text-xl font-bold text-pink-900">Información Importante</h3>
               </div>
               
               <div className="space-y-4 text-pink-800">
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">📚</span>
-                  <p className="font-semibold">Total de novelas: ${CURRENT_NOVELAS_CATALOG.length}</p>
+                  <p className="font-semibold">Las novelas se encargan completas</p>
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">💰</span>
-                  <p className="font-semibold">Precios sincronizados con panel de control</p>
+                  <p className="font-semibold">Precios variables según novela (configuración actual aplicada)</p>
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">💳</span>
-                  <p className="font-semibold">Recargo transferencia: +${CURRENT_PRICING_CONFIG.transferFeePercentage}%</p>
+                  <p className="font-semibold">Transferencia bancaria: +{currentConfig.pricing.transferFeePercentage}% de recargo</p>
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">📱</span>
-                  <p className="font-semibold">Contacto: ${phoneNumber}</p>
+                  <p className="font-semibold">Para más información, contacta al número:</p>
                 </div>
               </div>
 
+              {/* Número de contacto */}
               <div className="mt-6 bg-white rounded-xl p-4 border border-pink-300">
-                <div className="text-center">
-                  <p className="text-sm text-green-700 mb-2">
-                    ✅ Configuración actual aplicada y sincronizada
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Exportado el: ${timestamp}
-                  </p>
+                <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                  <div className="text-center sm:text-left">
+                    <p className="text-lg font-bold text-gray-900">{phoneNumber}</p>
+                    <p className="text-sm text-gray-600">Contacto directo</p>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleCall}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Llamar
+                    </button>
+                    <button
+                      onClick={handleWhatsApp}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      WhatsApp
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Resto de la implementación del modal con configuración actual aplicada */}
-            <div className="text-center p-8">
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
-                <h4 className="text-lg font-bold text-green-900 mb-4">
-                  NovelasModal con Configuración Actual Aplicada
-                </h4>
-                <p className="text-sm text-green-700 mb-2">
-                  ✅ Catálogo sincronizado: ${CURRENT_NOVELAS_CATALOG.length} novelas
-                </p>
-                <p className="text-sm text-green-700 mb-2">
-                  ✅ Precios actualizados automáticamente
-                </p>
-                <p className="text-sm text-green-700 mb-2">
-                  ✅ Recargo transferencia: ${CURRENT_PRICING_CONFIG.transferFeePercentage}%
-                </p>
-                <p className="text-xs text-gray-600 mt-4">
-                  Exportado el: ${timestamp}
-                </p>
-              </div>
+            {/* Opciones del catálogo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <button
+                onClick={downloadNovelList}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center"
+              >
+                <Download className="h-6 w-6 mr-3" />
+                <div className="text-left">
+                  <div className="text-lg">Descargar Catálogo</div>
+                  <div className="text-sm opacity-90">Lista completa de {novelas.length} novelas</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => setShowNovelList(!showNovelList)}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center"
+              >
+                <BookOpen className="h-6 w-6 mr-3" />
+                <div className="text-left">
+                  <div className="text-lg">Ver y Seleccionar</div>
+                  <div className="text-sm opacity-90">Elegir novelas específicas</div>
+                </div>
+              </button>
             </div>
+
+            {/* Lista de novelas */}
+            {showNovelList && (
+              <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 border-b border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+                    <h4 className="text-lg font-bold text-gray-900">
+                      Seleccionar Novelas ({selectedNovelas.length} seleccionadas)
+                    </h4>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={selectAllNovelas}
+                        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Todas
+                      </button>
+                      <button
+                        onClick={clearAllNovelas}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Ninguna
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Resumen de totales */}
+                {selectedNovelas.length > 0 && (
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 border-b border-gray-200">
+                    <div className="flex items-center mb-4">
+                      <Calculator className="h-6 w-6 text-green-600 mr-3" />
+                      <h5 className="text-lg font-bold text-gray-900">Resumen de Selección</h5>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                        <div className="text-2xl font-bold text-purple-600">{selectedNovelas.length}</div>
+                        <div className="text-sm text-gray-600">Novelas</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                        <div className="text-2xl font-bold text-blue-600">{totals.totalCapitulos}</div>
+                        <div className="text-sm text-gray-600">Capítulos</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                        <div className="text-2xl font-bold text-green-600">${totals.cashTotal.toLocaleString()}</div>
+                        <div className="text-sm text-gray-600">Efectivo</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                        <div className="text-2xl font-bold text-orange-600">${totals.transferTotal.toLocaleString()}</div>
+                        <div className="text-sm text-gray-600">Transferencia</div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-lg p-4 border-2 border-green-300">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-gray-900">TOTAL A PAGAR:</span>
+                        <span className="text-2xl font-bold text-green-600">${totals.grandTotal.toLocaleString()} CUP</span>
+                      </div>
+                      {totals.transferFee > 0 && (
+                        <div className="text-sm text-orange-600 mt-2">
+                          Incluye ${totals.transferFee.toLocaleString()} CUP de recargo por transferencia ({currentConfig.pricing.transferFeePercentage}%)
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="max-h-96 overflow-y-auto p-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    {novelasWithPayment.map((novela) => {
+                      const isSelected = selectedNovelas.includes(novela.id);
+                      const novelaConfig = currentConfig.novelas.find(config => config.id === novela.id);
+                      const baseCost = novelaConfig?.costoEfectivo || novela.capitulos * 5;
+                      const transferCost = novelaConfig?.costoTransferencia || Math.round(baseCost * (1 + currentConfig.pricing.transferFeePercentage / 100));
+                      const finalCost = novela.paymentType === 'transfer' ? transferCost : baseCost;
+                      
+                      return (
+                        <div
+                          key={novela.id}
+                          className={`p-4 rounded-xl border transition-all ${
+                            isSelected 
+                              ? 'bg-purple-50 border-purple-300 shadow-md' 
+                              : 'bg-gray-50 border-gray-200 hover:bg-purple-25 hover:border-purple-200'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-4">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleNovelToggle(novela.id)}
+                              className="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                            />
+                            
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between space-y-3 sm:space-y-0">
+                                <div className="flex-1">
+                                  <p className="font-semibold text-gray-900 mb-2">{novela.titulo}</p>
+                                  <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-3">
+                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                                      {novela.genero}
+                                    </span>
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                      {novela.capitulos} capítulos
+                                    </span>
+                                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                      {novela.año}
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Selector de tipo de pago */}
+                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                                    <span className="text-sm font-medium text-gray-700">Tipo de pago:</span>
+                                    <div className="flex space-x-2">
+                                      <button
+                                        onClick={() => handlePaymentTypeChange(novela.id, 'cash')}
+                                        className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
+                                          novela.paymentType === 'cash'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-200 text-gray-600 hover:bg-green-100'
+                                        }`}
+                                      >
+                                        <DollarSign className="h-3 w-3 inline mr-1" />
+                                        Efectivo
+                                      </button>
+                                      <button
+                                        onClick={() => handlePaymentTypeChange(novela.id, 'transfer')}
+                                        className={`px-3 py-2 rounded-full text-xs font-medium transition-colors ${
+                                          novela.paymentType === 'transfer'
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-gray-200 text-gray-600 hover:bg-orange-100'
+                                        }`}
+                                      >
+                                        <CreditCard className="h-3 w-3 inline mr-1" />
+                                        Transferencia (+{currentConfig.pricing.transferFeePercentage}%)
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="text-right sm:ml-4">
+                                  <div className={`text-lg font-bold ${
+                                    novela.paymentType === 'cash' ? 'text-green-600' : 'text-orange-600'
+                                  }`}>
+                                    ${finalCost.toLocaleString()} CUP
+                                  </div>
+                                  {novela.paymentType === 'transfer' && (
+                                    <div className="text-xs text-gray-500">
+                                      Base: ${baseCost.toLocaleString()} CUP
+                                      <br />
+                                      Recargo: +${(transferCost - baseCost).toLocaleString()} CUP
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    ${Math.round(baseCost / novela.capitulos)} CUP × {novela.capitulos} cap.
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {isSelected && (
+                              <Check className="h-5 w-5 text-purple-600 mt-1" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {selectedNovelas.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+                      <div className="text-center sm:text-left">
+                        <p className="font-semibold text-gray-900">
+                          {selectedNovelas.length} novelas seleccionadas
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Total: ${totals.grandTotal.toLocaleString()} CUP
+                        </p>
+                      </div>
+                      <button
+                        onClick={sendSelectedNovelas}
+                        disabled={selectedNovelas.length === 0}
+                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center ${
+                          selectedNovelas.length > 0
+                            ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <MessageCircle className="h-5 w-5 mr-2" />
+                        Enviar por WhatsApp
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
