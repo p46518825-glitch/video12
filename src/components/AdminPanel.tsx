@@ -170,7 +170,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
   const handleExportSystemFiles = () => {
     exportSystemFiles();
-    displayLocalNotification('Archivos del sistema exportados con configuración actual aplicada', 'success');
+    displayLocalNotification('Archivos del sistema exportados correctamente. Revise las descargas.', 'success');
   };
 
   const filteredNovelas = state.config.novelas.filter(novela =>
@@ -860,33 +860,48 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     <div className="bg-white rounded-xl p-6 border border-indigo-200 shadow-sm">
                       <h4 className="text-lg font-bold text-indigo-900 mb-4 flex items-center">
                         <FileCode className="h-5 w-5 mr-2 text-indigo-600" />
-                        Exportar Archivos del Sistema Completos
+                        Exportar Archivos del Sistema con Configuración Aplicada
                       </h4>
                       <p className="text-indigo-700 mb-4">
-                        <strong>Exportación Avanzada:</strong> Descarga los archivos del código fuente que controlan el sistema con toda la configuración actual aplicada.
+                        <strong>Exportación Completa:</strong> Descarga todos los archivos del sistema con la configuración actual aplicada y sincronizada.
                       </p>
                       <div className="bg-indigo-50 rounded-lg p-4 mb-4 border border-indigo-200">
                         <div className="flex items-center mb-2">
                           <div className="bg-indigo-100 p-2 rounded-lg mr-3">
                             <FileCode className="h-4 w-4 text-indigo-600" />
                           </div>
-                          <h5 className="font-semibold text-indigo-900">Archivos que se exportarán:</h5>
+                          <h5 className="font-semibold text-indigo-900">Sistema completo sincronizado:</h5>
                         </div>
                         <ul className="text-sm text-indigo-700 ml-11 space-y-1">
-                          <li>• <code>src/types/admin.ts</code> - Tipos y configuración actual</li>
-                          <li>• <code>src/context/AdminContext.tsx</code> - Contexto con valores aplicados</li>
-                          <li>• <code>src/components/AdminPanel.tsx</code> - Panel con configuración actual</li>
-                          <li>• <code>src/components/CheckoutModal.tsx</code> - Sistema de checkout sincronizado</li>
-                          <li>• <code>src/components/NovelasModal.tsx</code> - Catálogo sincronizado</li>
+                          <li>• <code>admin.ts</code> - Tipos y configuración actual aplicada</li>
+                          <li>• <code>AdminContext.tsx</code> - Contexto sincronizado con localStorage</li>
+                          <li>• <code>AdminPanel.tsx</code> - Panel de control con configuración actual</li>
+                          <li>• <code>CheckoutModal.tsx</code> - Checkout con precios y zonas actualizadas</li>
+                          <li>• <code>NovelasModal.tsx</code> - Modal con catálogo completo sincronizado</li>
+                          <li>• <code>README.md</code> - Documentación de la configuración exportada</li>
+                          <li>• <code>INSTALL.md</code> - Guía de instalación paso a paso</li>
                         </ul>
+                        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <p className="text-sm text-green-700">
+                            <strong>✅ Configuración actual:</strong> Precios ${currentConfig.pricing.moviePrice}/${currentConfig.pricing.seriesPrice} CUP, 
+                            {currentConfig.novelas.length} novelas, {currentConfig.deliveryZones.length} zonas, 
+                            transferencia +{currentConfig.pricing.transferFeePercentage}%
+                          </p>
+                        </div>
                       </div>
                       <button
                         onClick={handleExportSystemFiles}
                         className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
                       >
                         <FileCode className="h-5 w-5 mr-2" />
-                        Exportar Archivos del Sistema
+                        Exportar Sistema Completo
                       </button>
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-700">
+                          <strong>📁 Nota:</strong> Los archivos se descargarán individualmente con nombres que incluyen la fecha y hora de exportación. 
+                          Mantenga la estructura de carpetas original al instalarlos.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

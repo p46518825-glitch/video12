@@ -46,7 +46,7 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
   // Obtener configuración actual del admin (sincronizada)
   const currentConfig = getCurrentConfig();
   
-  // Obtener zonas de entrega desde configuración actual aplicada
+  // Obtener zonas de entrega activas desde configuración sincronizada
   const deliveryZones = currentConfig.deliveryZones.filter(zone => zone.active);
   const selectedZone = deliveryZones.find(zone => zone.fullPath === deliveryZone);
   const deliveryCost = selectedZone?.cost || 0;
@@ -77,13 +77,13 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
     const transferItems = items.filter(item => item.paymentType === 'transfer');
     
     const cashTotal = cashItems.reduce((sum, item) => {
-      // Usar configuración actual del admin
+      // Usar configuración sincronizada del admin
       const basePrice = item.type === 'movie' ? currentConfig.pricing.moviePrice : (item.selectedSeasons?.length || 1) * currentConfig.pricing.seriesPrice;
       return sum + basePrice;
     }, 0);
     
     const transferTotal = transferItems.reduce((sum, item) => {
-      // Usar configuración actual del admin
+      // Usar configuración sincronizada del admin
       const basePrice = item.type === 'movie' ? currentConfig.pricing.moviePrice : (item.selectedSeasons?.length || 1) * currentConfig.pricing.seriesPrice;
       return sum + Math.round(basePrice * (1 + currentConfig.pricing.transferFeePercentage / 100));
     }, 0);
@@ -228,7 +228,7 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold">Finalizar Pedido</h2>
                 <p className="text-sm opacity-90">Complete sus datos para procesar el pedido</p>
-                <p className="text-xs opacity-75">Precios: Película ${currentConfig.pricing.moviePrice} CUP | Serie ${currentConfig.pricing.seriesPrice} CUP/temp | Transferencia +{currentConfig.pricing.transferFeePercentage}%</p>
+                <p className="text-xs opacity-75">Configuración actual: Película ${currentConfig.pricing.moviePrice} CUP | Serie ${currentConfig.pricing.seriesPrice} CUP/temp | Transferencia +{currentConfig.pricing.transferFeePercentage}%</p>
               </div>
             </div>
             <button

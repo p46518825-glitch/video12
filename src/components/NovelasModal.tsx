@@ -27,7 +27,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   // Obtener configuración actual del admin (sincronizada)
   const currentConfig = getCurrentConfig();
   
-  // Obtener novelas desde configuración actual aplicada
+  // Obtener novelas desde configuración sincronizada
   const novelas: Novela[] = currentConfig.novelas.map(novela => ({
     id: novela.id,
     titulo: novela.titulo,
@@ -300,7 +300,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
                 <h2 className="text-2xl sm:text-3xl font-bold">Catálogo de Novelas</h2>
                 <p className="text-sm sm:text-base opacity-90">
                   {novelas.length} novelas disponibles | Transferencia +{currentConfig.pricing.transferFeePercentage}%
-                </p>
+                {novelas.length} novelas disponibles | Configuración sincronizada | Transferencia +{currentConfig.pricing.transferFeePercentage}%
               </div>
             </div>
             <button
@@ -334,7 +334,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">💳</span>
-                  <p className="font-semibold">Transferencia bancaria: +{currentConfig.pricing.transferFeePercentage}% de recargo</p>
+                  <p className="font-semibold">Transferencia bancaria: +{currentConfig.pricing.transferFeePercentage}% de recargo (configuración actual)</p>
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">📱</span>

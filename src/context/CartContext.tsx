@@ -204,8 +204,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const calculateItemPrice = (item: SeriesCartItem): number => {
-    // Get admin config for dynamic pricing
-    const adminConfig = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+    // Get current admin config for synchronized pricing
+    const adminConfig = JSON.parse(localStorage.getItem('adminConfig') || '{"pricing":{"moviePrice":80,"seriesPrice":300,"transferFeePercentage":10}}');
     const moviePrice = adminConfig.pricing?.moviePrice || 80;
     const seriesPrice = adminConfig.pricing?.seriesPrice || 300;
     const transferFeePercentage = adminConfig.pricing?.transferFeePercentage || 10;
@@ -232,8 +232,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const calculateTotalByPaymentType = (): { cash: number; transfer: number } => {
-    // Get admin config for dynamic pricing
-    const adminConfig = JSON.parse(localStorage.getItem('adminConfig') || '{}');
+    // Get current admin config for synchronized pricing
+    const adminConfig = JSON.parse(localStorage.getItem('adminConfig') || '{"pricing":{"moviePrice":80,"seriesPrice":300,"transferFeePercentage":10}}');
     const moviePrice = adminConfig.pricing?.moviePrice || 80;
     const seriesPrice = adminConfig.pricing?.seriesPrice || 300;
     const transferFeePercentage = adminConfig.pricing?.transferFeePercentage || 10;
