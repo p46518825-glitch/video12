@@ -180,7 +180,7 @@ export function Cart() {
                             }`}
                           >
                             <CreditCard className="h-3 w-3 inline mr-1" />
-                            Transferencia (+10%)
+                            Transferencia (+{transferFeePercentage}%)
                           </button>
                         </div>
                       </div>
@@ -240,7 +240,10 @@ export function Cart() {
                           </div>
                         )}
                       </div>
-                    </div>
+                          {item.type === 'movie' ? 
+                            `Película ${item.paymentType === 'cash' ? 'efectivo' : `transferencia (+${transferFeePercentage}%)`}` :
+                            `${item.selectedSeasons?.length || 1} temp. ${item.paymentType === 'cash' ? 'efectivo' : `transferencia (+${transferFeePercentage}%)`}`
+                          }
                   </div>
 
                   {/* Action Buttons */}

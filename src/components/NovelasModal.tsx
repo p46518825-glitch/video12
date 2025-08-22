@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download, MessageCircle, Phone, BookOpen, Info, Check, DollarSign, CreditCard, Calculator, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { X, Download, MessageCircle, Phone, BookOpen, Info, Check, DollarSign, CreditCard, Calculator, Search, Filter, SortAsc, SortDesc, Grid, List, Star, Calendar, Hash, Zap } from 'lucide-react';
 import { AdminContext } from '../context/AdminContext';
 
 interface Novela {
@@ -482,99 +482,253 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
               <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
                 {/* Filters */}
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-b border-gray-200">
-                  <div className="flex items-center mb-4">
-                    <Filter className="h-5 w-5 text-purple-600 mr-2" />
-                    <h4 className="text-lg font-bold text-purple-900">Filtros de Búsqueda</h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
+                    <div className="flex items-center">
+                      <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                        <Filter className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-bold text-purple-900">Filtros Avanzados</h4>
+                        <p className="text-sm text-purple-600">Encuentra exactamente lo que buscas</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-white rounded-lg p-1 border border-purple-200">
+                      <span className="text-xs font-medium text-purple-700 px-2">Vista:</span>
+                      <button className="p-2 rounded-md bg-purple-100 text-purple-700">
+                        <Grid className="h-4 w-4" />
+                      </button>
+                      <button className="p-2 rounded-md text-purple-600 hover:bg-purple-50">
+                        <List className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                  {/* Barra de búsqueda principal */}
+                  <div className="mb-6">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex items-center">
+                        <Search className="h-5 w-5 text-purple-400 mr-2" />
+                        <div className="h-5 w-px bg-purple-200"></div>
+                      </div>
                       <input
                         type="text"
-                        placeholder="Buscar novelas por título..."
+                        placeholder="Buscar por título, género, año o descripción..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300 placeholder-gray-400 text-gray-900"
+                        className="w-full pl-14 pr-12 py-4 border-2 border-purple-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-400 bg-white shadow-lg hover:shadow-xl transition-all duration-300 placeholder-purple-300 text-gray-900 text-lg font-medium"
                       />
                       {searchTerm && (
                         <button
                           onClick={() => setSearchTerm('')}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-purple-100 hover:bg-purple-200 text-purple-600 p-2 rounded-full transition-all duration-300 hover:scale-110"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-lg">
+                        {filteredNovelas.length} resultados
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Filtros en tarjetas */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    {/* Filtro por género */}
+                    <div className="bg-white rounded-xl p-4 border-2 border-purple-100 hover:border-purple-300 transition-all duration-300 shadow-sm hover:shadow-md">
+                      <div className="flex items-center mb-3">
+                        <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                          <Star className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <label className="text-sm font-bold text-purple-900">Género</label>
+                      </div>
+                      <select
+                        value={selectedGenre}
+                        onChange={(e) => setSelectedGenre(e.target.value)}
+                        className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent bg-purple-50 text-purple-900 font-medium shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <option value="">🎭 Todos los géneros</option>
+                        {uniqueGenres.map(genre => (
+                          <option key={genre} value={genre}>
+                            {genre === 'Drama/Romance' ? '💕 ' + genre :
+                             genre === 'Comedia/Romance' ? '😄 ' + genre :
+                             genre === 'Drama/Melodrama' ? '😢 ' + genre :
+                             genre === 'Drama/Acción' ? '⚡ ' + genre :
+                             genre === 'Drama/Suspenso' ? '🔍 ' + genre :
+                             genre === 'Drama/Fantasía' ? '✨ ' + genre :
+                             '🎬 ' + genre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Filtro por año */}
+                    <div className="bg-white rounded-xl p-4 border-2 border-purple-100 hover:border-purple-300 transition-all duration-300 shadow-sm hover:shadow-md">
+                      <div className="flex items-center mb-3">
+                        <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                          <Calendar className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <label className="text-sm font-bold text-blue-900">Año de Estreno</label>
+                      </div>
+                      <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-blue-50 text-blue-900 font-medium shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <option value="">📅 Todos los años</option>
+                        {uniqueYears.map(year => (
+                          <option key={year} value={year}>
+                            {year >= 2020 ? '🆕 ' : year >= 2010 ? '📺 ' : '📼 '}{year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Filtro de ordenamiento */}
+                    <div className="bg-white rounded-xl p-4 border-2 border-purple-100 hover:border-purple-300 transition-all duration-300 shadow-sm hover:shadow-md">
+                      <div className="flex items-center mb-3">
+                        <div className="bg-green-100 p-2 rounded-lg mr-3">
+                          <Hash className="h-4 w-4 text-green-600" />
+                        </div>
+                        <label className="text-sm font-bold text-green-900">Ordenar por</label>
+                      </div>
+                      <div className="flex space-x-2">
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value as 'titulo' | 'año' | 'capitulos')}
+                          className="flex-1 px-3 py-3 border border-green-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent text-sm bg-green-50 text-green-900 font-medium shadow-sm hover:shadow-md transition-all duration-300"
+                        >
+                          <option value="titulo">📝 Título</option>
+                          <option value="año">📅 Año</option>
+                          <option value="capitulos">📊 Capítulos</option>
+                        </select>
+                        
+                        <button
+                          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                          className="px-4 py-3 bg-gradient-to-r from-green-100 to-blue-100 hover:from-green-200 hover:to-blue-200 text-green-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105"
+                          title={`Ordenar ${sortOrder === 'asc' ? 'descendente' : 'ascendente'}`}
+                        >
+                          {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                    
+                  {/* Filtros rápidos */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-3">
+                      <Zap className="h-4 w-4 text-yellow-600 mr-2" />
+                      <span className="text-sm font-bold text-yellow-900">Filtros Rápidos</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedGenre('Drama/Romance');
+                          setSelectedYear('');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-pink-100 to-red-100 hover:from-pink-200 hover:to-red-200 text-pink-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        💕 Romance
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedGenre('');
+                          setSelectedYear('2020');
+                          setSortBy('año');
+                          setSortOrder('desc');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 text-blue-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        🆕 Recientes
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedGenre('');
+                          setSelectedYear('');
+                          setSortBy('capitulos');
+                          setSortOrder('desc');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 text-green-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        📊 Más Capítulos
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedGenre('Comedia/Romance');
+                          setSelectedYear('');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 text-yellow-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        😄 Comedia
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedGenre('');
+                          setSelectedYear('');
+                          setSortBy('año');
+                          setSortOrder('asc');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-100 to-indigo-100 hover:from-purple-200 hover:to-indigo-200 text-purple-700 rounded-full text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
+                      >
+                        📼 Clásicas
+                      </button>
+                    </div>
+                  </div>
+                      
+                  {/* Estadísticas y controles */}
+                  <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 border border-purple-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="bg-purple-100 p-1 rounded-full">
+                              <BookOpen className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold text-purple-900">{filteredNovelas.length}</div>
+                              <div className="text-xs text-purple-600">de {allNovelas.length} novelas</div>
+                            </div>
+                          </div>
+                        </div>
+                        {(searchTerm || selectedGenre || selectedYear) && (
+                          <div className="bg-white rounded-lg p-3 shadow-sm">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
+                              <span className="text-purple-700 text-sm font-bold">Filtros Activos</span>
+                            </div>
+                            <div className="text-xs text-purple-600 mt-1">
+                              {searchTerm && `Búsqueda: "${searchTerm}"`}
+                              {selectedGenre && ` • Género: ${selectedGenre}`}
+                              {selectedYear && ` • Año: ${selectedYear}`}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {(searchTerm || selectedGenre || selectedYear || sortBy !== 'titulo' || sortOrder !== 'asc') && (
+                        <button
+                          onClick={clearFilters}
+                          className="bg-gradient-to-r from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 text-red-700 px-6 py-3 rounded-xl transition-all duration-300 font-bold shadow-sm hover:shadow-md transform hover:scale-105 flex items-center space-x-2"
                         >
                           <X className="h-4 w-4" />
+                          <span>Limpiar Todo</span>
                         </button>
                       )}
                     </div>
                     
-                    <select
-                      value={selectedGenre}
-                      onChange={(e) => setSelectedGenre(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
-                    >
-                      <option value="">Todos los géneros</option>
-                      {uniqueGenres.map(genre => (
-                        <option key={genre} value={genre}>{genre}</option>
-                      ))}
-                    </select>
-                    
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
-                    >
-                      <option value="">Todos los años</option>
-                      {uniqueYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                    
-                    <div className="flex space-x-2">
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'titulo' | 'año' | 'capitulos')}
-                        className="flex-1 px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm bg-white shadow-sm hover:shadow-md transition-all duration-300"
-                      >
-                        <option value="titulo">Título</option>
-                        <option value="año">Año</option>
-                        <option value="capitulos">Capítulos</option>
-                      </select>
-                      
-                      <button
-                        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                        className="px-3 py-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
-                        title={`Ordenar ${sortOrder === 'asc' ? 'descendente' : 'ascendente'}`}
-                      >
-                        {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                    <div className="text-sm text-purple-700">
-                      <div className="flex items-center space-x-2">
-                        <div className="bg-purple-100 p-1 rounded-full">
-                          <BookOpen className="h-3 w-3 text-purple-600" />
+                    {/* Barra de progreso de filtrado */}
+                    {(searchTerm || selectedGenre || selectedYear) && (
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-purple-600 mb-1">
+                          <span>Resultados encontrados</span>
+                          <span>{Math.round((filteredNovelas.length / allNovelas.length) * 100)}%</span>
                         </div>
-                        <span>Mostrando {filteredNovelas.length} de {allNovelas.length} novelas</span>
+                        <div className="w-full bg-purple-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${(filteredNovelas.length / allNovelas.length) * 100}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      {(searchTerm || selectedGenre || selectedYear) && (
-                        <div className="mt-1 flex items-center space-x-1">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                          <span className="text-purple-600 text-xs font-medium">Filtros activos</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {(searchTerm || selectedGenre || selectedYear || sortBy !== 'titulo' || sortOrder !== 'asc') && (
-                      <button
-                        onClick={clearFilters}
-                        className="text-sm bg-purple-200 hover:bg-purple-300 text-purple-800 px-4 py-2 rounded-xl transition-all duration-300 font-medium shadow-sm hover:shadow-md flex items-center space-x-1"
-                      >
-                        <X className="h-3 w-3" />
-                        <span>Limpiar filtros</span>
-                        Limpiar filtros
-                      </button>
                     )}
                   </div>
                 </div>
