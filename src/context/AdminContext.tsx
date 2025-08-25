@@ -364,7 +364,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateNovel,
       deleteNovel,
       addNotification,
-      removeNotification
+      removeNotification,
       clearNotifications,
       exportSystemBackup
     }}>
