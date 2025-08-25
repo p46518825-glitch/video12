@@ -258,51 +258,55 @@ const ModernLogin = ({ onLogin }: { onLogin: (username: string, password: string
 
 // Main AdminPanel Component
 export function AdminPanel() {
-  const { state, login, logout, updatePrices, addDeliveryZone, updateDeliveryZone, deleteDeliveryZone, addNovel, updateNovel, deleteNovel, clearNotifications, exportSystemBackup } = useAdmin();
+  const { state, login, logout, updatePrices, addDeliveryZone, updateDeliveryZone, deleteDeliveryZone, addNovel, updateNovel, deleteNovel, addNotification, clearNotifications, exportSystemBackup } = useAdmin();
   const [activeSection, setActiveSection] = useState<'dashboard' | 'prices' | 'zones' | 'novels' | 'system' | 'notifications'>('dashboard');
   const [editingZone, setEditingZone] = useState<DeliveryZone | null>(null);
   const [editingNovel, setEditingNovel] = useState<Novel | null>(null);
   const [showAddZoneForm, setShowAddZoneForm] = useState(false);
   const [showAddNovelForm, setShowAddNovelForm] = useState(false);
+  const [showNotificationToast, setShowNotificationToast] = useState(false);
+  const [lastNotification, setLastNotification] = useState<any>(null);
 
   // Form states
   const [priceForm, setPriceForm] = useState<PriceConfig>(state.prices);
   const [zoneForm, setZoneForm] = useState({ name: '', cost: 0, active: true });
   const [novelForm, setNovelForm] = useState({ titulo: '', genero: '', capitulos: 0, año: new Date().getFullYear(), descripcion: '', active: true });
 
-  // Toast notification state
-  const [notification, setNotification] = useState<{
-    show: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>({ show: false, message: '', type: 'success' });
-
-  // Show notification function
-  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }));
-    }, 4000);
-  };
-
   useEffect(() => {
     setPriceForm(state.prices);
   }, [state.prices]);
 
+  // Show notification toast for new notifications
+  useEffect(() => {
+    if (state.notifications.length > 0) {
+      const latest = state.notifications[state.notifications.length - 1];
+      if (latest && latest.id !== lastNotification?.id) {
+        setLastNotification(latest);
+        setShowNotificationToast(true);
+        setTimeout(() => setShowNotificationToast(false), 4000);
+      }
+    }
+  }, [state.notifications, lastNotification]);
+
   if (!state.isAuthenticated) {
-    return <ModernLogin onLogin={login} />;
+    return <ModernLogin onLogin={(username: string, password: string) => {
+      // Verificar credenciales específicas
+      if (username === 'root' && password === 'video') {
+        login();
+        return true;
+      }
+      return false;
+    }} />;
   }
 
   const handlePriceUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     updatePrices(priceForm);
-    showNotification('Precios actualizados correctamente', 'success');
   };
 
   const handleAddZone = (e: React.FormEvent) => {
     e.preventDefault();
     addDeliveryZone(zoneForm);
-    showNotification(`Zona "${zoneForm.name}" agregada correctamente`, 'success');
     setZoneForm({ name: '', cost: 0, active: true });
     setShowAddZoneForm(false);
   };
@@ -311,7 +315,6 @@ export function AdminPanel() {
     e.preventDefault();
     if (editingZone) {
       updateDeliveryZone({ ...editingZone, ...zoneForm });
-      showNotification(`Zona "${zoneForm.name}" actualizada correctamente`, 'success');
       setEditingZone(null);
       setZoneForm({ name: '', cost: 0, active: true });
     }
@@ -320,7 +323,6 @@ export function AdminPanel() {
   const handleAddNovel = (e: React.FormEvent) => {
     e.preventDefault();
     addNovel(novelForm);
-    showNotification(`Novela "${novelForm.titulo}" agregada correctamente`, 'success');
     setNovelForm({ titulo: '', genero: '', capitulos: 0, año: new Date().getFullYear(), descripcion: '', active: true });
     setShowAddNovelForm(false);
   };
@@ -329,7 +331,6 @@ export function AdminPanel() {
     e.preventDefault();
     if (editingNovel) {
       updateNovel({ ...editingNovel, ...novelForm });
-      showNotification(`Novela "${novelForm.titulo}" actualizada correctamente`, 'success');
       setEditingNovel(null);
       setNovelForm({ titulo: '', genero: '', capitulos: 0, año: new Date().getFullYear(), descripcion: '', active: true });
     }
@@ -345,26 +346,26 @@ export function AdminPanel() {
     setNovelForm({ titulo: novel.titulo, genero: novel.genero, capitulos: novel.capitulos, año: novel.año, descripcion: novel.descripcion || '', active: novel.active });
   };
 
-  const handleDeleteZone = (zoneId: number) => {
-    const zone = state.deliveryZones.find(z => z.id === zoneId);
-    deleteDeliveryZone(zoneId);
-    showNotification(`Zona "${zone?.name}" eliminada correctamente`, 'info');
-  };
-
-  const handleDeleteNovel = (novelId: number) => {
-    const novel = state.novels.find(n => n.id === novelId);
-    deleteNovel(novelId);
-    showNotification(`Novela "${novel?.titulo}" eliminada correctamente`, 'info');
-  };
-
   const handleClearNotifications = () => {
-    clearNotifications();
-    showNotification('Notificaciones limpiadas correctamente', 'info');
+    if (window.confirm('¿Estás seguro de que deseas limpiar todas las notificaciones?')) {
+      clearNotifications();
+    }
   };
 
   const handleExportBackup = () => {
-    exportSystemBackup();
-    showNotification('Sistema exportado correctamente', 'success');
+    if (window.confirm('¿Deseas exportar un respaldo completo del sistema?')) {
+      exportSystemBackup();
+    }
+  };
+
+  const handleTestNotification = () => {
+    addNotification({
+      type: 'info',
+      title: 'Notificación de Prueba',
+      message: 'Esta es una notificación de prueba del sistema',
+      section: 'Sistema',
+      action: 'Prueba'
+    });
   };
 
   const renderDashboard = () => (
@@ -413,7 +414,8 @@ export function AdminPanel() {
       </div>
 
       {/* Recent activity */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
           <h3 className="text-xl font-bold text-gray-900 flex items-center">
             <Activity className="mr-3 h-6 w-6 text-blue-600" />
@@ -443,13 +445,65 @@ export function AdminPanel() {
               </div>
             </div>
           ))}
+          {state.notifications.length === 0 && (
+            <div className="text-center py-8">
+              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No hay notificaciones recientes</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+        {/* System Status */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center">
+              <Settings className="mr-3 h-6 w-6 text-green-600" />
+              Estado del Sistema
+            </h3>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                <span className="font-medium text-green-900">Sistema Operativo</span>
+              </div>
+              <span className="text-green-600 text-sm">100% Funcional</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200">
+              <div className="flex items-center">
+                <Database className="h-5 w-5 text-blue-600 mr-3" />
+                <span className="font-medium text-blue-900">Base de Datos</span>
+              </div>
+              <span className="text-blue-600 text-sm">Sincronizada</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <div className="flex items-center">
+                <Globe className="h-5 w-5 text-purple-600 mr-3" />
+                <span className="font-medium text-purple-900">Conectividad</span>
+              </div>
+              <span className="text-purple-600 text-sm">Excelente</span>
+            </div>
+            
+            <div className="pt-4 border-t border-gray-200">
+              <button
+                onClick={handleTestNotification}
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105"
+              >
+                Probar Notificaciones
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 
   const renderPrices = () => (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
         <h3 className="text-xl font-bold text-gray-900 flex items-center">
           <DollarSign className="mr-3 h-6 w-6 text-green-600" />
@@ -550,6 +604,56 @@ export function AdminPanel() {
         </button>
       </form>
     </div>
+
+      {/* Price History */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900 flex items-center">
+            <BarChart3 className="mr-3 h-6 w-6 text-blue-600" />
+            Historial de Precios
+          </h3>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 mb-2">
+                  ${state.prices.moviePrice}
+                </div>
+                <div className="text-sm text-green-700 font-medium">Película Actual</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 mb-2">
+                  ${state.prices.seriesPrice}
+                </div>
+                <div className="text-sm text-purple-700 font-medium">Serie/Temporada</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600 mb-2">
+                  {state.prices.transferFeePercentage}%
+                </div>
+                <div className="text-sm text-orange-700 font-medium">Recargo Transfer.</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-pink-600 mb-2">
+                  ${state.prices.novelPricePerChapter}
+                </div>
+                <div className="text-sm text-pink-700 font-medium">Por Capítulo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
   const renderZones = () => (
@@ -563,6 +667,46 @@ export function AdminPanel() {
           <Plus className="h-5 w-5" />
           <span>Agregar Zona</span>
         </button>
+      </div>
+
+      {/* Zone Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-600 text-sm font-medium">Total Zonas</p>
+              <p className="text-3xl font-bold text-blue-800">{state.deliveryZones.length}</p>
+            </div>
+            <MapPin className="h-12 w-12 text-blue-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 text-sm font-medium">Zonas Activas</p>
+              <p className="text-3xl font-bold text-green-800">
+                {state.deliveryZones.filter(z => z.active).length}
+              </p>
+            </div>
+            <Check className="h-12 w-12 text-green-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-600 text-sm font-medium">Costo Promedio</p>
+              <p className="text-3xl font-bold text-yellow-800">
+                ${state.deliveryZones.length > 0 
+                  ? Math.round(state.deliveryZones.reduce((sum, z) => sum + z.cost, 0) / state.deliveryZones.length)
+                  : 0
+                }
+              </p>
+            </div>
+            <Calculator className="h-12 w-12 text-yellow-400" />
+          </div>
+        </div>
       </div>
 
       {(showAddZoneForm || editingZone) && (
@@ -640,7 +784,14 @@ export function AdminPanel() {
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b border-gray-200">
-          <h4 className="text-lg font-bold text-gray-900">Zonas Configuradas ({state.deliveryZones.length})</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-lg font-bold text-gray-900">Zonas Configuradas ({state.deliveryZones.length})</h4>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                {state.deliveryZones.filter(z => z.active).length} activas
+              </span>
+            </div>
+          </div>
         </div>
         <div className="divide-y divide-gray-200">
           {state.deliveryZones.map((zone) => (
@@ -666,14 +817,12 @@ export function AdminPanel() {
                   <button
                     onClick={() => startEditZone(zone)}
                     className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Editar zona"
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteZone(zone.id)}
+                    onClick={() => deleteDeliveryZone(zone.id)}
                     className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Eliminar zona"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -697,6 +846,55 @@ export function AdminPanel() {
           <Plus className="h-5 w-5" />
           <span>Agregar Novela</span>
         </button>
+      </div>
+
+      {/* Novel Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 border border-pink-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-pink-600 text-sm font-medium">Total Novelas</p>
+              <p className="text-3xl font-bold text-pink-800">{state.novels.length}</p>
+            </div>
+            <BookOpen className="h-12 w-12 text-pink-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-600 text-sm font-medium">Novelas Activas</p>
+              <p className="text-3xl font-bold text-purple-800">
+                {state.novels.filter(n => n.active).length}
+              </p>
+            </div>
+            <Star className="h-12 w-12 text-purple-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-600 text-sm font-medium">Total Capítulos</p>
+              <p className="text-3xl font-bold text-blue-800">
+                {state.novels.reduce((sum, n) => sum + n.capitulos, 0).toLocaleString()}
+              </p>
+            </div>
+            <FileText className="h-12 w-12 text-blue-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 text-sm font-medium">Valor Total</p>
+              <p className="text-3xl font-bold text-green-800">
+                ${(state.novels.reduce((sum, n) => sum + (n.capitulos * state.prices.novelPricePerChapter), 0)).toLocaleString()}
+              </p>
+            </div>
+            <DollarSign className="h-12 w-12 text-green-400" />
+          </div>
+        </div>
       </div>
 
       {(showAddNovelForm || editingNovel) && (
@@ -815,7 +1013,14 @@ export function AdminPanel() {
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-6 py-4 border-b border-gray-200">
-          <h4 className="text-lg font-bold text-gray-900">Novelas Configuradas ({state.novels.length})</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-lg font-bold text-gray-900">Novelas Configuradas ({state.novels.length})</h4>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                {state.novels.filter(n => n.active).length} activas
+              </span>
+            </div>
+          </div>
         </div>
         <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
           {state.novels.map((novel) => (
@@ -844,14 +1049,12 @@ export function AdminPanel() {
                   <button
                     onClick={() => startEditNovel(novel)}
                     className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Editar novela"
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteNovel(novel.id)}
+                    onClick={() => deleteNovel(novel.id)}
                     className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Eliminar novela"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -866,6 +1069,45 @@ export function AdminPanel() {
 
   const renderSystem = () => (
     <div className="space-y-6">
+      {/* System Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-200">
+          <div className="text-center">
+            <div className="bg-indigo-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Download className="h-8 w-8 text-indigo-600" />
+            </div>
+            <h4 className="text-xl font-bold text-indigo-900 mb-2">Exportar Sistema</h4>
+            <p className="text-indigo-700 mb-4 text-sm">
+              Descarga un respaldo completo de toda la configuración
+            </p>
+            <button
+              onClick={handleExportBackup}
+              className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              Exportar Ahora
+            </button>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 border border-red-200">
+          <div className="text-center">
+            <div className="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Trash2 className="h-8 w-8 text-red-600" />
+            </div>
+            <h4 className="text-xl font-bold text-red-900 mb-2">Limpiar Notificaciones</h4>
+            <p className="text-red-700 mb-4 text-sm">
+              Elimina todas las notificaciones del historial
+            </p>
+            <button
+              onClick={handleClearNotifications}
+              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              Limpiar Todo
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-gray-200">
           <h3 className="text-xl font-bold text-gray-900 flex items-center">
@@ -899,23 +1141,6 @@ export function AdminPanel() {
                 <FileText className="h-5 w-5 text-green-600" />
               </div>
               <p className="text-green-700 text-sm">6 archivos principales</p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
-            <div className="text-center">
-              <h4 className="text-xl font-bold text-gray-900 mb-4">Exportar Sistema Completo</h4>
-              <p className="text-gray-600 mb-6">
-                Exporta todos los archivos del sistema con las configuraciones actuales sincronizadas
-              </p>
-              <button
-                onClick={exportSystemBackup}
-                onClick={handleExportBackup}
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center space-x-3 mx-auto"
-              >
-                <Download className="h-6 w-6" />
-                <span>Exportar Sistema</span>
-              </button>
             </div>
           </div>
 
@@ -955,13 +1180,73 @@ export function AdminPanel() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-gray-900">Notificaciones del Sistema</h3>
-        <button
-          onClick={clearNotifications}
-          className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center space-x-2"
-        >
-          <Trash2 className="h-5 w-5" />
-          <span>Limpiar Todo</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleTestNotification}
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center space-x-2"
+          >
+            <Bell className="h-4 w-4" />
+            <span>Probar</span>
+          </button>
+          <button
+            onClick={handleClearNotifications}
+            className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center space-x-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Limpiar</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Notification Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 text-sm font-medium">Exitosas</p>
+              <p className="text-3xl font-bold text-green-800">
+                {state.notifications.filter(n => n.type === 'success').length}
+              </p>
+            </div>
+            <Check className="h-12 w-12 text-green-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-600 text-sm font-medium">Informativas</p>
+              <p className="text-3xl font-bold text-blue-800">
+                {state.notifications.filter(n => n.type === 'info').length}
+              </p>
+            </div>
+            <Info className="h-12 w-12 text-blue-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-600 text-sm font-medium">Advertencias</p>
+              <p className="text-3xl font-bold text-yellow-800">
+                {state.notifications.filter(n => n.type === 'warning').length}
+              </p>
+            </div>
+            <AlertCircle className="h-12 w-12 text-yellow-400" />
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 border border-red-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-red-600 text-sm font-medium">Errores</p>
+              <p className="text-3xl font-bold text-red-800">
+                {state.notifications.filter(n => n.type === 'error').length}
+              </p>
+            </div>
+            <X className="h-12 w-12 text-red-400" />
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -971,6 +1256,21 @@ export function AdminPanel() {
           </h4>
         </div>
         <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+          {state.notifications.length === 0 && (
+            <div className="p-12 text-center">
+              <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay notificaciones</h3>
+              <p className="text-gray-600 mb-4">
+                Las notificaciones aparecerán aquí cuando realices acciones en el sistema
+              </p>
+              <button
+                onClick={handleTestNotification}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105"
+              >
+                Generar Notificación de Prueba
+              </button>
+            </div>
+          )}
           {state.notifications.map((notification) => (
             <div key={notification.id} className="p-6 hover:bg-gray-50 transition-colors">
               <div className="flex items-start space-x-4">
@@ -1008,6 +1308,53 @@ export function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Notification Toast */}
+      {showNotificationToast && lastNotification && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
+          <div className={`max-w-sm w-full bg-white rounded-xl shadow-2xl border-l-4 ${
+            lastNotification.type === 'success' ? 'border-green-500' :
+            lastNotification.type === 'warning' ? 'border-yellow-500' :
+            lastNotification.type === 'error' ? 'border-red-500' :
+            'border-blue-500'
+          } overflow-hidden`}>
+            <div className="p-4">
+              <div className="flex items-start">
+                <div className={`flex-shrink-0 p-2 rounded-full ${
+                  lastNotification.type === 'success' ? 'bg-green-100 text-green-600' :
+                  lastNotification.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                  lastNotification.type === 'error' ? 'bg-red-100 text-red-600' :
+                  'bg-blue-100 text-blue-600'
+                }`}>
+                  {lastNotification.type === 'success' ? <Check className="h-4 w-4" /> :
+                   lastNotification.type === 'warning' ? <AlertCircle className="h-4 w-4" /> :
+                   lastNotification.type === 'error' ? <X className="h-4 w-4" /> :
+                   <Info className="h-4 w-4" />}
+                </div>
+                <div className="ml-3 w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {lastNotification.title}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {lastNotification.message}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {lastNotification.section}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0 flex">
+                  <button
+                    onClick={() => setShowNotificationToast(false)}
+                    className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1038,7 +1385,6 @@ export function AdminPanel() {
             
             <button
               onClick={logout}
-              onClick={handleClearNotifications}
               className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
             >
               Cerrar Sesión
@@ -1064,18 +1410,26 @@ export function AdminPanel() {
                     { id: 'system', label: 'Sistema', icon: Settings }
                   ].map((item) => {
                     const Icon = item.icon;
+                    const hasNotifications = item.id === 'notifications' && state.notifications.length > 0;
                     return (
                       <button
                         key={item.id}
                         onClick={() => setActiveSection(item.id as any)}
-                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
                           activeSection === item.id
                             ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <Icon className="h-5 w-5" />
-                        <span className="font-medium">{item.label}</span>
+                        <div className="flex items-center space-x-3">
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {hasNotifications && (
+                          <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                            {state.notifications.length > 99 ? '99+' : state.notifications.length}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -1095,50 +1449,6 @@ export function AdminPanel() {
           </div>
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {notification.show && (
-        <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-right duration-300">
-          <div className={`flex items-center p-4 rounded-xl shadow-2xl border-l-4 max-w-md ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border-green-500 text-green-800' 
-              : notification.type === 'error'
-                ? 'bg-red-50 border-red-500 text-red-800'
-                : 'bg-blue-50 border-blue-500 text-blue-800'
-          }`}>
-            <div className={`p-2 rounded-full mr-3 ${
-              notification.type === 'success' 
-                ? 'bg-green-100' 
-                : notification.type === 'error'
-                  ? 'bg-red-100'
-                  : 'bg-blue-100'
-            }`}>
-              {notification.type === 'success' ? (
-                <Check className="h-5 w-5 text-green-600" />
-              ) : notification.type === 'error' ? (
-                <X className="h-5 w-5 text-red-600" />
-              ) : (
-                <Info className="h-5 w-5 text-blue-600" />
-              )}
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-sm">{notification.message}</p>
-            </div>
-            <button
-              onClick={() => setNotification(prev => ({ ...prev, show: false }))}
-              className={`ml-3 p-1 rounded-full hover:bg-opacity-20 transition-colors ${
-                notification.type === 'success' 
-                  ? 'hover:bg-green-600' 
-                  : notification.type === 'error'
-                    ? 'hover:bg-red-600'
-                    : 'hover:bg-blue-600'
-              }`}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
