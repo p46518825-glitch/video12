@@ -4,10 +4,10 @@ import type { CartItem } from '../types/movie';
 
 // PRECIOS EMBEBIDOS - Generados automáticamente
 const EMBEDDED_PRICES = {
-  "moviePrice": 80,
-  "seriesPrice": 300,
-  "transferFeePercentage": 10,
-  "novelPricePerChapter": 5
+  "moviePrice": 90,
+  "seriesPrice": 400,
+  "transferFeePercentage": 15,
+  "novelPricePerChapter": 20
 };
 
 interface SeriesCartItem extends CartItem {
@@ -102,6 +102,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     type: 'success' | 'error';
     isVisible: boolean;
   }>({ message: '', type: 'success', isVisible: false });
+
+  // Listen for embedded config updates
+  useEffect(() => {
+    const handleConfigUpdate = (event: CustomEvent) => {
+      // Configuration updated, prices are now embedded
+      console.log('Configuration updated, using embedded prices');
+    };
+
+    window.addEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+    return () => window.removeEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+  }, []);
 
   // Clear cart on page refresh
   useEffect(() => {

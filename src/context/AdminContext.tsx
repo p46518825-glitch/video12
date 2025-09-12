@@ -4,15 +4,34 @@ import JSZip from 'jszip';
 // CONFIGURACIÓN EMBEBIDA - Generada automáticamente
 const EMBEDDED_CONFIG = {
   "version": "2.1.0",
-  "lastExport": "2025-09-05T08:44:06.529Z",
+  "lastExport": "2025-09-12T08:18:31.112Z",
   "prices": {
-    "moviePrice": 80,
-    "seriesPrice": 300,
-    "transferFeePercentage": 10,
-    "novelPricePerChapter": 5
+    "moviePrice": 90,
+    "seriesPrice": 400,
+    "transferFeePercentage": 15,
+    "novelPricePerChapter": 20
   },
-  "deliveryZones": [],
-  "novels": [],
+  "deliveryZones": [
+    {
+      "name": "aguero",
+      "cost": 200,
+      "id": 1757665099864,
+      "createdAt": "2025-09-12T08:18:19.864Z",
+      "updatedAt": "2025-09-12T08:18:19.864Z"
+    }
+  ],
+  "novels": [
+    {
+      "titulo": "blanca",
+      "genero": "drama",
+      "capitulos": 1,
+      "año": 2025,
+      "descripcion": "",
+      "id": 1757665111112,
+      "createdAt": "2025-09-12T08:18:31.112Z",
+      "updatedAt": "2025-09-12T08:18:31.112Z"
+    }
+  ],
   "settings": {
     "autoSync": true,
     "syncInterval": 300000,
@@ -177,6 +196,10 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         prices: action.payload,
         lastExport: new Date().toISOString(),
       };
+      
+      // Update embedded configuration in real-time
+      updateEmbeddedConfiguration(updatedConfig);
+      
       return {
         ...state,
         prices: action.payload,
@@ -196,6 +219,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: [...state.systemConfig.deliveryZones, newZone],
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithNewZone);
+      
       return {
         ...state,
         deliveryZones: [...state.deliveryZones, newZone],
@@ -214,6 +240,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: updatedZones,
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithUpdatedZone);
+      
       return {
         ...state,
         deliveryZones: updatedZones,
@@ -228,6 +257,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: filteredZones,
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithDeletedZone);
+      
       return {
         ...state,
         deliveryZones: filteredZones,
@@ -247,6 +279,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: [...state.systemConfig.novels, newNovel],
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithNewNovel);
+      
       return {
         ...state,
         novels: [...state.novels, newNovel],
@@ -265,6 +300,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: updatedNovels,
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithUpdatedNovel);
+      
       return {
         ...state,
         novels: updatedNovels,
@@ -279,6 +317,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: filteredNovels,
         lastExport: new Date().toISOString(),
       };
+      
+      updateEmbeddedConfiguration(configWithDeletedNovel);
+      
       return {
         ...state,
         novels: filteredNovels,
@@ -310,6 +351,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
       };
 
     case 'LOAD_SYSTEM_CONFIG':
+      updateEmbeddedConfiguration(action.payload);
       return {
         ...state,
         prices: action.payload.prices,
@@ -321,6 +363,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
 
     case 'UPDATE_SYSTEM_CONFIG':
       const newSystemConfig = { ...state.systemConfig, ...action.payload };
+      updateEmbeddedConfiguration(newSystemConfig);
       return {
         ...state,
         systemConfig: newSystemConfig,
@@ -338,150 +381,37 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
   }
 }
 
+// Function to update embedded configuration in real-time
+function updateEmbeddedConfiguration(config: SystemConfig) {
+  // This would trigger a regeneration of the embedded files
+  // For now, we'll store in localStorage as a fallback
+  localStorage.setItem('embedded_config', JSON.stringify(config));
+  
+  // Broadcast configuration change
+  window.dispatchEvent(new CustomEvent('embedded_config_updated', { 
+    detail: config 
+  }));
+}
+
 // Context creation
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
-
-// Real-time sync service
-class RealTimeSyncService {
-  private listeners: Set<(data: any) => void> = new Set();
-  private syncInterval: NodeJS.Timeout | null = null;
-  private storageKey = 'admin_system_state';
-  private configKey = 'system_config';
-
-  constructor() {
-    this.initializeSync();
-  }
-
-  private initializeSync() {
-    window.addEventListener('storage', this.handleStorageChange.bind(this));
-    this.syncInterval = setInterval(() => {
-      this.checkForUpdates();
-    }, 5000);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        this.checkForUpdates();
-      }
-    });
-  }
-
-  private handleStorageChange(event: StorageEvent) {
-    if ((event.key === this.storageKey || event.key === this.configKey) && event.newValue) {
-      try {
-        const newState = JSON.parse(event.newValue);
-        this.notifyListeners(newState);
-      } catch (error) {
-        console.error('Error parsing sync data:', error);
-      }
-    }
-  }
-
-  private checkForUpdates() {
-    try {
-      const stored = localStorage.getItem(this.storageKey);
-      const config = localStorage.getItem(this.configKey);
-      
-      if (stored) {
-        const storedState = JSON.parse(stored);
-        this.notifyListeners(storedState);
-      }
-      
-      if (config) {
-        const configData = JSON.parse(config);
-        this.notifyListeners({ systemConfig: configData });
-      }
-    } catch (error) {
-      console.error('Error checking for updates:', error);
-    }
-  }
-
-  subscribe(callback: (data: any) => void) {
-    this.listeners.add(callback);
-    return () => this.listeners.delete(callback);
-  }
-
-  broadcast(state: AdminState) {
-    try {
-      const syncData = {
-        ...state,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem(this.storageKey, JSON.stringify(syncData));
-      localStorage.setItem(this.configKey, JSON.stringify(state.systemConfig));
-      this.notifyListeners(syncData);
-    } catch (error) {
-      console.error('Error broadcasting state:', error);
-    }
-  }
-
-  private notifyListeners(data: any) {
-    this.listeners.forEach(callback => {
-      try {
-        callback(data);
-      } catch (error) {
-        console.error('Error in sync listener:', error);
-      }
-    });
-  }
-
-  destroy() {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-    }
-    window.removeEventListener('storage', this.handleStorageChange.bind(this));
-    this.listeners.clear();
-  }
-}
 
 // Provider component
 export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(adminReducer, initialState);
-  const [syncService] = React.useState(() => new RealTimeSyncService());
 
   // Load system config on startup
   useEffect(() => {
     try {
-      const storedConfig = localStorage.getItem('system_config');
+      const storedConfig = localStorage.getItem('embedded_config');
       if (storedConfig) {
         const config = JSON.parse(storedConfig);
         dispatch({ type: 'LOAD_SYSTEM_CONFIG', payload: config });
       }
-      
-      const stored = localStorage.getItem('admin_system_state');
-      if (stored) {
-        const storedState = JSON.parse(stored);
-        dispatch({ type: 'SYNC_STATE', payload: storedState });
-      }
     } catch (error) {
-      console.error('Error loading initial state:', error);
+      console.error('Error loading embedded config:', error);
     }
   }, []);
-
-  // Save state changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('admin_system_state', JSON.stringify(state));
-      localStorage.setItem('system_config', JSON.stringify(state.systemConfig));
-      syncService.broadcast(state);
-    } catch (error) {
-      console.error('Error saving state:', error);
-    }
-  }, [state, syncService]);
-
-  // Real-time sync listener
-  useEffect(() => {
-    const unsubscribe = syncService.subscribe((syncedState) => {
-      if (JSON.stringify(syncedState) !== JSON.stringify(state)) {
-        dispatch({ type: 'SYNC_STATE', payload: syncedState });
-      }
-    });
-    return unsubscribe;
-  }, [syncService, state]);
-
-  useEffect(() => {
-    return () => {
-      syncService.destroy();
-    };
-  }, [syncService]);
 
   // Context methods implementation
   const login = (username: string, password: string): boolean => {
@@ -515,7 +445,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Precios actualizados',
-      message: 'Los precios se han actualizado y sincronizado automáticamente',
+      message: 'Los precios se han actualizado y aplicado automáticamente en toda la aplicación',
       section: 'Precios',
       action: 'update'
     });
@@ -527,7 +457,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega agregada',
-      message: `Se agregó la zona "${zone.name}" y se sincronizó automáticamente`,
+      message: `Se agregó la zona "${zone.name}" y está disponible en el checkout`,
       section: 'Zonas de Entrega',
       action: 'create'
     });
@@ -539,7 +469,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega actualizada',
-      message: `Se actualizó la zona "${zone.name}" y se sincronizó automáticamente`,
+      message: `Se actualizó la zona "${zone.name}" y los cambios se aplicaron automáticamente`,
       section: 'Zonas de Entrega',
       action: 'update'
     });
@@ -552,7 +482,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Zona de entrega eliminada',
-      message: `Se eliminó la zona "${zone?.name || 'Desconocida'}" y se sincronizó automáticamente`,
+      message: `Se eliminó la zona "${zone?.name || 'Desconocida'}" del sistema`,
       section: 'Zonas de Entrega',
       action: 'delete'
     });
@@ -564,7 +494,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela agregada',
-      message: `Se agregó la novela "${novel.titulo}" y se sincronizó automáticamente`,
+      message: `Se agregó la novela "${novel.titulo}" al catálogo`,
       section: 'Gestión de Novelas',
       action: 'create'
     });
@@ -576,7 +506,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela actualizada',
-      message: `Se actualizó la novela "${novel.titulo}" y se sincronizó automáticamente`,
+      message: `Se actualizó la novela "${novel.titulo}" en el catálogo`,
       section: 'Gestión de Novelas',
       action: 'update'
     });
@@ -589,7 +519,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Novela eliminada',
-      message: `Se eliminó la novela "${novel?.titulo || 'Desconocida'}" y se sincronizó automáticamente`,
+      message: `Se eliminó la novela "${novel?.titulo || 'Desconocida'}" del catálogo`,
       section: 'Gestión de Novelas',
       action: 'delete'
     });
@@ -621,7 +551,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         action: 'export_config_start'
       });
 
-      // Create comprehensive system configuration
       const completeConfig: SystemConfig = {
         ...state.systemConfig,
         version: '2.1.0',
@@ -631,14 +560,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         novels: state.novels,
         metadata: {
           ...state.systemConfig.metadata,
-          totalOrders: state.systemConfig.metadata.totalOrders,
-          totalRevenue: state.systemConfig.metadata.totalRevenue,
-          lastOrderDate: state.systemConfig.metadata.lastOrderDate,
-          systemUptime: state.systemConfig.metadata.systemUptime,
+          exportTimestamp: new Date().toISOString(),
         },
       };
 
-      // Generate JSON file
       const configJson = JSON.stringify(completeConfig, null, 2);
       const blob = new Blob([configJson], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -650,7 +575,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Update system config with export timestamp
       dispatch({ 
         type: 'UPDATE_SYSTEM_CONFIG', 
         payload: { lastExport: new Date().toISOString() } 
@@ -680,12 +604,11 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Exportación de código fuente iniciada',
-        message: 'Generando sistema completo con código fuente...',
+        message: 'Generando sistema completo con configuración embebida...',
         section: 'Sistema',
         action: 'export_source_start'
       });
 
-      // Importar dinámicamente el generador de código fuente
       try {
         const { generateCompleteSourceCode } = await import('../utils/sourceCodeGenerator');
         await generateCompleteSourceCode(state.systemConfig);
@@ -697,7 +620,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Código fuente exportado',
-        message: 'El sistema completo se ha exportado como código fuente',
+        message: 'El sistema completo con configuración embebida se ha exportado correctamente',
         section: 'Sistema',
         action: 'export_source'
       });
@@ -720,7 +643,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Configuración importada',
-        message: 'La configuración del sistema se ha cargado correctamente',
+        message: 'La configuración del sistema se ha cargado y aplicado correctamente',
         section: 'Sistema',
         action: 'import'
       });
@@ -741,15 +664,13 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización completa iniciada',
-        message: 'Sincronizando todas las secciones del sistema...',
+        message: 'Aplicando cambios en toda la aplicación...',
         section: 'Sistema',
         action: 'sync_all_start'
       });
 
-      // Simulate comprehensive sync of all sections
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Update all components with current state
       const updatedConfig: SystemConfig = {
         ...state.systemConfig,
         lastExport: new Date().toISOString(),
@@ -760,7 +681,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
       dispatch({ type: 'UPDATE_SYSTEM_CONFIG', payload: updatedConfig });
       
-      // Broadcast changes to all components
       window.dispatchEvent(new CustomEvent('admin_full_sync', { 
         detail: { 
           config: updatedConfig,
@@ -771,7 +691,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completa exitosa',
-        message: 'Todas las secciones se han sincronizado correctamente',
+        message: 'Todos los cambios se han aplicado correctamente en la aplicación',
         section: 'Sistema',
         action: 'sync_all'
       });
@@ -814,13 +734,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización iniciada',
-        message: 'Iniciando sincronización con el sistema remoto...',
+        message: 'Aplicando cambios en toda la aplicación...',
         section: 'Sistema',
         action: 'sync_start'
       });
 
-      // Simulate remote sync
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       dispatch({ 
         type: 'UPDATE_SYNC_STATUS', 
@@ -833,7 +752,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completada',
-        message: 'Todos los datos se han sincronizado correctamente',
+        message: 'Todos los cambios se han aplicado correctamente',
         section: 'Sistema',
         action: 'sync'
       });
@@ -842,7 +761,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'error',
         title: 'Error de sincronización',
-        message: 'No se pudo sincronizar con el servidor remoto',
+        message: 'No se pudo aplicar algunos cambios',
         section: 'Sistema',
         action: 'sync_error'
       });

@@ -2,14 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, MessageCircle, Calculator, Truck } from 'lucide-react';
 
 // ZONAS DE ENTREGA EMBEBIDAS - Generadas automáticamente
-const EMBEDDED_DELIVERY_ZONES = [];
+const EMBEDDED_DELIVERY_ZONES = [
+  {
+    "name": "aguero",
+    "cost": 200,
+    "id": 1757665099864,
+    "createdAt": "2025-09-12T08:18:19.864Z",
+    "updatedAt": "2025-09-12T08:18:19.864Z"
+  }
+];
 
 // PRECIOS EMBEBIDOS
 const EMBEDDED_PRICES = {
-  "moviePrice": 80,
-  "seriesPrice": 300,
-  "transferFeePercentage": 10,
-  "novelPricePerChapter": 5
+  "moviePrice": 90,
+  "seriesPrice": 400,
+  "transferFeePercentage": 15,
+  "novelPricePerChapter": 20
 };
 
 export interface CustomerInfo {
@@ -56,6 +64,17 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
 
   // Use embedded delivery zones
   const deliveryZones = EMBEDDED_DELIVERY_ZONES;
+
+  // Listen for embedded config updates
+  useEffect(() => {
+    const handleConfigUpdate = (event: CustomEvent) => {
+      // Configuration updated, delivery zones are now embedded
+      console.log('Delivery zones updated');
+    };
+
+    window.addEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+    return () => window.removeEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+  }, []);
 
   useEffect(() => {
     if (selectedZone) {

@@ -3,10 +3,10 @@ import { DollarSign, Tv, Film, Star, CreditCard } from 'lucide-react';
 
 // PRECIOS EMBEBIDOS - Generados automáticamente
 const EMBEDDED_PRICES = {
-  "moviePrice": 80,
-  "seriesPrice": 300,
-  "transferFeePercentage": 10,
-  "novelPricePerChapter": 5
+  "moviePrice": 90,
+  "seriesPrice": 400,
+  "transferFeePercentage": 15,
+  "novelPricePerChapter": 20
 };
 
 interface PriceCardProps {
