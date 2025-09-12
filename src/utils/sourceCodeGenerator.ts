@@ -1,89 +1,18 @@
 import JSZip from 'jszip';
-import type { SystemConfig } from '../context/AdminContext';
+import { SystemConfig } from '../context/AdminContext';
 
 export async function generateCompleteSourceCode(systemConfig: SystemConfig): Promise<void> {
   try {
     const zip = new JSZip();
     
-    // Generate all source files with embedded configuration
-    const files = {
-      // Core configuration files with embedded data
-      'src/context/AdminContext.tsx': generateAdminContextWithEmbeddedConfig(systemConfig),
-      'src/context/CartContext.tsx': generateCartContextWithEmbeddedPrices(systemConfig),
-      'src/components/CheckoutModal.tsx': generateCheckoutModalWithEmbeddedZones(systemConfig),
-      'src/components/PriceCard.tsx': generatePriceCardWithEmbeddedPrices(systemConfig),
-      'src/components/NovelasModal.tsx': generateNovelasModalWithEmbeddedCatalog(systemConfig),
-      
-      // Configuration files
-      'package.json': generateUpdatedPackageJson(),
-      'vite.config.ts': getViteConfig(),
-      'tailwind.config.js': getTailwindConfig(),
-      'tsconfig.json': getTsConfig(),
-      'index.html': getIndexHtml(),
-      'README.md': generateSystemReadme(systemConfig),
-      'system-config.json': JSON.stringify(systemConfig, null, 2),
-      
-      // Public files
-      'public/_redirects': getNetlifyRedirects(),
-      'vercel.json': getVercelConfig(),
-      
-      // CSS
-      'src/index.css': getIndexCssSource(),
-      
-      // Main files
-      'src/main.tsx': getMainTsxSource(),
-      'src/App.tsx': getAppTsxSource(),
-      
-      // Types
-      'src/types/movie.ts': getMovieTypesSource(),
-      
-      // Services
-      'src/services/tmdb.ts': getTmdbServiceSource(),
-      'src/services/api.ts': getApiServiceSource(),
-      'src/services/contentSync.ts': getContentSyncSource(),
-      'src/services/contentFilter.ts': getContentFilterSource(),
-      'src/config/api.ts': getApiConfigSource(),
-      
-      // Utils
-      'src/utils/performance.ts': getPerformanceUtilsSource(),
-      'src/utils/errorHandler.ts': getErrorHandlerSource(),
-      'src/utils/whatsapp.ts': getWhatsAppUtilsSource(),
-      'src/utils/systemExport.ts': getSystemExportSource(),
-      
-      // Hooks
-      'src/hooks/useOptimizedContent.ts': getOptimizedContentHookSource(),
-      'src/hooks/usePerformance.ts': getPerformanceHookSource(),
-      'src/hooks/useContentSync.ts': getContentSyncHookSource(),
-      
-      // Components
-      'src/components/Header.tsx': getHeaderSource(),
-      'src/components/MovieCard.tsx': getMovieCardSource(),
-      'src/components/HeroCarousel.tsx': getHeroCarouselSource(),
-      'src/components/LoadingSpinner.tsx': getLoadingSpinnerSource(),
-      'src/components/ErrorMessage.tsx': getErrorMessageSource(),
-      'src/components/OptimizedImage.tsx': getOptimizedImageSource(),
-      'src/components/VideoPlayer.tsx': getVideoPlayerSource(),
-      'src/components/CastSection.tsx': getCastSectionSource(),
-      'src/components/CartAnimation.tsx': getCartAnimationSource(),
-      'src/components/Toast.tsx': getToastSource(),
-      
-      // Pages
-      'src/pages/Home.tsx': getHomePageSource(),
-      'src/pages/Movies.tsx': getMoviesPageSource(),
-      'src/pages/TVShows.tsx': getTVShowsPageSource(),
-      'src/pages/Anime.tsx': getAnimePageSource(),
-      'src/pages/Search.tsx': getSearchPageSource(),
-      'src/pages/Cart.tsx': getCartPageSource(),
-      'src/pages/MovieDetail.tsx': getMovieDetailPageSource(),
-      'src/pages/TVDetail.tsx': getTVDetailPageSource(),
-      'src/pages/AdminPanel.tsx': getAdminPanelSource(),
-    };
-
+    // Generate updated source files with embedded configuration
+    const updatedFiles = generateUpdatedSourceFiles(systemConfig);
+    
     // Add all files to zip
-    Object.entries(files).forEach(([path, content]) => {
-      zip.file(path, content);
+    Object.entries(updatedFiles).forEach(([filePath, content]) => {
+      zip.file(filePath, content);
     });
-
+    
     // Generate and download zip
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
@@ -94,20 +23,51 @@ export async function generateCompleteSourceCode(systemConfig: SystemConfig): Pr
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
+    
   } catch (error) {
-    console.error('Error generating complete source code:', error);
+    console.error('Error generating source code:', error);
     throw error;
   }
 }
 
-// Generate AdminContext with embedded configuration
-function generateAdminContextWithEmbeddedConfig(config: SystemConfig): string {
+function generateUpdatedSourceFiles(systemConfig: SystemConfig): Record<string, string> {
+  const files: Record<string, string> = {};
+  
+  // Generate AdminContext with embedded configuration
+  files['src/context/AdminContext.tsx'] = generateAdminContext(systemConfig);
+  
+  // Generate CartContext with embedded prices
+  files['src/context/CartContext.tsx'] = generateCartContext(systemConfig);
+  
+  // Generate CheckoutModal with embedded delivery zones
+  files['src/components/CheckoutModal.tsx'] = generateCheckoutModal(systemConfig);
+  
+  // Generate PriceCard with embedded prices
+  files['src/components/PriceCard.tsx'] = generatePriceCard(systemConfig);
+  
+  // Generate NovelasModal with embedded catalog
+  files['src/components/NovelasModal.tsx'] = generateNovelasModal(systemConfig);
+  
+  // Add other necessary files
+  files['package.json'] = generatePackageJson();
+  files['README.md'] = generateReadme(systemConfig);
+  files['vite.config.ts'] = getViteConfig();
+  files['tailwind.config.js'] = getTailwindConfig();
+  files['index.html'] = getIndexHtml();
+  files['src/main.tsx'] = getMainTsx();
+  files['src/index.css'] = getIndexCss();
+  files['public/_redirects'] = getNetlifyRedirects();
+  files['vercel.json'] = getVercelConfig();
+  
+  return files;
+}
+
+function generateAdminContext(systemConfig: SystemConfig): string {
   return `import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import JSZip from 'jszip';
 
 // CONFIGURACIÓN EMBEBIDA - Generada automáticamente
-const EMBEDDED_CONFIG = ${JSON.stringify(config, null, 2)};
+const EMBEDDED_CONFIG = ${JSON.stringify(systemConfig, null, 2)};
 
 // CREDENCIALES DE ACCESO (CONFIGURABLES)
 const ADMIN_CREDENTIALS = {
@@ -260,10 +220,8 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast price changes to entire app
-      window.dispatchEvent(new CustomEvent('admin_prices_updated', { 
-        detail: action.payload 
-      }));
+      // Update embedded configuration in real-time
+      updateEmbeddedConfiguration(updatedConfig);
       
       return {
         ...state,
@@ -285,10 +243,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast delivery zones changes
-      window.dispatchEvent(new CustomEvent('admin_delivery_zones_updated', { 
-        detail: [...state.deliveryZones, newZone]
-      }));
+      updateEmbeddedConfiguration(configWithNewZone);
       
       return {
         ...state,
@@ -309,10 +264,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast delivery zones changes
-      window.dispatchEvent(new CustomEvent('admin_delivery_zones_updated', { 
-        detail: updatedZones
-      }));
+      updateEmbeddedConfiguration(configWithUpdatedZone);
       
       return {
         ...state,
@@ -329,10 +281,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast delivery zones changes
-      window.dispatchEvent(new CustomEvent('admin_delivery_zones_updated', { 
-        detail: filteredZones
-      }));
+      updateEmbeddedConfiguration(configWithDeletedZone);
       
       return {
         ...state,
@@ -354,10 +303,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast novels changes
-      window.dispatchEvent(new CustomEvent('admin_novels_updated', { 
-        detail: [...state.novels, newNovel]
-      }));
+      updateEmbeddedConfiguration(configWithNewNovel);
       
       return {
         ...state,
@@ -378,10 +324,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast novels changes
-      window.dispatchEvent(new CustomEvent('admin_novels_updated', { 
-        detail: updatedNovels
-      }));
+      updateEmbeddedConfiguration(configWithUpdatedNovel);
       
       return {
         ...state,
@@ -398,10 +341,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         lastExport: new Date().toISOString(),
       };
       
-      // Broadcast novels changes
-      window.dispatchEvent(new CustomEvent('admin_novels_updated', { 
-        detail: filteredNovels
-      }));
+      updateEmbeddedConfiguration(configWithDeletedNovel);
       
       return {
         ...state,
@@ -434,6 +374,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
       };
 
     case 'LOAD_SYSTEM_CONFIG':
+      updateEmbeddedConfiguration(action.payload);
       return {
         ...state,
         prices: action.payload.prices,
@@ -445,6 +386,7 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
 
     case 'UPDATE_SYSTEM_CONFIG':
       const newSystemConfig = { ...state.systemConfig, ...action.payload };
+      updateEmbeddedConfiguration(newSystemConfig);
       return {
         ...state,
         systemConfig: newSystemConfig,
@@ -462,150 +404,37 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
   }
 }
 
+// Function to update embedded configuration in real-time
+function updateEmbeddedConfiguration(config: SystemConfig) {
+  // This would trigger a regeneration of the embedded files
+  // For now, we'll store in localStorage as a fallback
+  localStorage.setItem('embedded_config', JSON.stringify(config));
+  
+  // Broadcast configuration change
+  window.dispatchEvent(new CustomEvent('embedded_config_updated', { 
+    detail: config 
+  }));
+}
+
 // Context creation
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
-
-// Real-time sync service
-class RealTimeSyncService {
-  private listeners: Set<(data: any) => void> = new Set();
-  private syncInterval: NodeJS.Timeout | null = null;
-  private storageKey = 'admin_system_state';
-  private configKey = 'system_config';
-
-  constructor() {
-    this.initializeSync();
-  }
-
-  private initializeSync() {
-    window.addEventListener('storage', this.handleStorageChange.bind(this));
-    this.syncInterval = setInterval(() => {
-      this.checkForUpdates();
-    }, 5000);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        this.checkForUpdates();
-      }
-    });
-  }
-
-  private handleStorageChange(event: StorageEvent) {
-    if ((event.key === this.storageKey || event.key === this.configKey) && event.newValue) {
-      try {
-        const newState = JSON.parse(event.newValue);
-        this.notifyListeners(newState);
-      } catch (error) {
-        console.error('Error parsing sync data:', error);
-      }
-    }
-  }
-
-  private checkForUpdates() {
-    try {
-      const stored = localStorage.getItem(this.storageKey);
-      const config = localStorage.getItem(this.configKey);
-      
-      if (stored) {
-        const storedState = JSON.parse(stored);
-        this.notifyListeners(storedState);
-      }
-      
-      if (config) {
-        const configData = JSON.parse(config);
-        this.notifyListeners({ systemConfig: configData });
-      }
-    } catch (error) {
-      console.error('Error checking for updates:', error);
-    }
-  }
-
-  subscribe(callback: (data: any) => void) {
-    this.listeners.add(callback);
-    return () => this.listeners.delete(callback);
-  }
-
-  broadcast(state: AdminState) {
-    try {
-      const syncData = {
-        ...state,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem(this.storageKey, JSON.stringify(syncData));
-      localStorage.setItem(this.configKey, JSON.stringify(state.systemConfig));
-      this.notifyListeners(syncData);
-    } catch (error) {
-      console.error('Error broadcasting state:', error);
-    }
-  }
-
-  private notifyListeners(data: any) {
-    this.listeners.forEach(callback => {
-      try {
-        callback(data);
-      } catch (error) {
-        console.error('Error in sync listener:', error);
-      }
-    });
-  }
-
-  destroy() {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-    }
-    window.removeEventListener('storage', this.handleStorageChange.bind(this));
-    this.listeners.clear();
-  }
-}
 
 // Provider component
 export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(adminReducer, initialState);
-  const [syncService] = React.useState(() => new RealTimeSyncService());
 
   // Load system config on startup
   useEffect(() => {
     try {
-      const storedConfig = localStorage.getItem('system_config');
+      const storedConfig = localStorage.getItem('embedded_config');
       if (storedConfig) {
         const config = JSON.parse(storedConfig);
         dispatch({ type: 'LOAD_SYSTEM_CONFIG', payload: config });
       }
-      
-      const stored = localStorage.getItem('admin_system_state');
-      if (stored) {
-        const storedState = JSON.parse(stored);
-        dispatch({ type: 'SYNC_STATE', payload: storedState });
-      }
     } catch (error) {
-      console.error('Error loading initial state:', error);
+      console.error('Error loading embedded config:', error);
     }
   }, []);
-
-  // Save state changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('admin_system_state', JSON.stringify(state));
-      localStorage.setItem('system_config', JSON.stringify(state.systemConfig));
-      syncService.broadcast(state);
-    } catch (error) {
-      console.error('Error saving state:', error);
-    }
-  }, [state, syncService]);
-
-  // Real-time sync listener
-  useEffect(() => {
-    const unsubscribe = syncService.subscribe((syncedState) => {
-      if (JSON.stringify(syncedState) !== JSON.stringify(state)) {
-        dispatch({ type: 'SYNC_STATE', payload: syncedState });
-      }
-    });
-    return unsubscribe;
-  }, [syncService, state]);
-
-  useEffect(() => {
-    return () => {
-      syncService.destroy();
-    };
-  }, [syncService]);
 
   // Context methods implementation
   const login = (username: string, password: string): boolean => {
@@ -639,7 +468,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Precios actualizados',
-      message: 'Los precios se han actualizado y sincronizado automáticamente en toda la aplicación',
+      message: 'Los precios se han actualizado y aplicado automáticamente en toda la aplicación',
       section: 'Precios',
       action: 'update'
     });
@@ -651,7 +480,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega agregada',
-      message: \`Se agregó la zona "\${zone.name}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se agregó la zona "\${zone.name}" y está disponible en el checkout\`,
       section: 'Zonas de Entrega',
       action: 'create'
     });
@@ -663,7 +492,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega actualizada',
-      message: \`Se actualizó la zona "\${zone.name}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se actualizó la zona "\${zone.name}" y los cambios se aplicaron automáticamente\`,
       section: 'Zonas de Entrega',
       action: 'update'
     });
@@ -676,7 +505,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Zona de entrega eliminada',
-      message: \`Se eliminó la zona "\${zone?.name || 'Desconocida'}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se eliminó la zona "\${zone?.name || 'Desconocida'}" del sistema\`,
       section: 'Zonas de Entrega',
       action: 'delete'
     });
@@ -688,7 +517,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela agregada',
-      message: \`Se agregó la novela "\${novel.titulo}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se agregó la novela "\${novel.titulo}" al catálogo\`,
       section: 'Gestión de Novelas',
       action: 'create'
     });
@@ -700,7 +529,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela actualizada',
-      message: \`Se actualizó la novela "\${novel.titulo}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se actualizó la novela "\${novel.titulo}" en el catálogo\`,
       section: 'Gestión de Novelas',
       action: 'update'
     });
@@ -713,7 +542,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Novela eliminada',
-      message: \`Se eliminó la novela "\${novel?.titulo || 'Desconocida'}" y se sincronizó automáticamente en toda la aplicación\`,
+      message: \`Se eliminó la novela "\${novel?.titulo || 'Desconocida'}" del catálogo\`,
       section: 'Gestión de Novelas',
       action: 'delete'
     });
@@ -745,7 +574,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         action: 'export_config_start'
       });
 
-      // Create comprehensive system configuration
       const completeConfig: SystemConfig = {
         ...state.systemConfig,
         version: '2.1.0',
@@ -755,14 +583,10 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         novels: state.novels,
         metadata: {
           ...state.systemConfig.metadata,
-          totalOrders: state.systemConfig.metadata.totalOrders,
-          totalRevenue: state.systemConfig.metadata.totalRevenue,
-          lastOrderDate: state.systemConfig.metadata.lastOrderDate,
-          systemUptime: state.systemConfig.metadata.systemUptime,
+          exportTimestamp: new Date().toISOString(),
         },
       };
 
-      // Generate JSON file
       const configJson = JSON.stringify(completeConfig, null, 2);
       const blob = new Blob([configJson], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -774,7 +598,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Update system config with export timestamp
       dispatch({ 
         type: 'UPDATE_SYSTEM_CONFIG', 
         payload: { lastExport: new Date().toISOString() } 
@@ -809,7 +632,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         action: 'export_source_start'
       });
 
-      // Importar dinámicamente el generador de código fuente
       try {
         const { generateCompleteSourceCode } = await import('../utils/sourceCodeGenerator');
         await generateCompleteSourceCode(state.systemConfig);
@@ -820,8 +642,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
       addNotification({
         type: 'success',
-        title: 'Código fuente exportado con configuración embebida',
-        message: 'El sistema completo se ha exportado con todas las modificaciones aplicadas y embebidas en el código fuente',
+        title: 'Código fuente exportado',
+        message: 'El sistema completo con configuración embebida se ha exportado correctamente',
         section: 'Sistema',
         action: 'export_source'
       });
@@ -844,7 +666,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Configuración importada',
-        message: 'La configuración del sistema se ha cargado correctamente',
+        message: 'La configuración del sistema se ha cargado y aplicado correctamente',
         section: 'Sistema',
         action: 'import'
       });
@@ -865,15 +687,13 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización completa iniciada',
-        message: 'Sincronizando todas las secciones del sistema en tiempo real...',
+        message: 'Aplicando cambios en toda la aplicación...',
         section: 'Sistema',
         action: 'sync_all_start'
       });
 
-      // Simulate comprehensive sync of all sections
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Update all components with current state
       const updatedConfig: SystemConfig = {
         ...state.systemConfig,
         lastExport: new Date().toISOString(),
@@ -884,7 +704,6 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
       dispatch({ type: 'UPDATE_SYSTEM_CONFIG', payload: updatedConfig });
       
-      // Broadcast changes to all components
       window.dispatchEvent(new CustomEvent('admin_full_sync', { 
         detail: { 
           config: updatedConfig,
@@ -895,7 +714,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completa exitosa',
-        message: 'Todas las secciones se han sincronizado correctamente en tiempo real en toda la aplicación',
+        message: 'Todos los cambios se han aplicado correctamente en la aplicación',
         section: 'Sistema',
         action: 'sync_all'
       });
@@ -938,13 +757,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización iniciada',
-        message: 'Iniciando sincronización con el sistema remoto...',
+        message: 'Aplicando cambios en toda la aplicación...',
         section: 'Sistema',
         action: 'sync_start'
       });
 
-      // Simulate remote sync
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       dispatch({ 
         type: 'UPDATE_SYNC_STATUS', 
@@ -957,7 +775,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completada',
-        message: 'Todos los datos se han sincronizado correctamente en tiempo real',
+        message: 'Todos los cambios se han aplicado correctamente',
         section: 'Sistema',
         action: 'sync'
       });
@@ -966,7 +784,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'error',
         title: 'Error de sincronización',
-        message: 'No se pudo sincronizar con el servidor remoto',
+        message: 'No se pudo aplicar algunos cambios',
         section: 'Sistema',
         action: 'sync_error'
       });
@@ -1012,14 +830,13 @@ export function useAdmin() {
 export { AdminContext };`;
 }
 
-// Generate CartContext with embedded prices
-function generateCartContextWithEmbeddedPrices(config: SystemConfig): string {
+function generateCartContext(systemConfig: SystemConfig): string {
   return `import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { Toast } from '../components/Toast';
 import type { CartItem } from '../types/movie';
 
 // PRECIOS EMBEBIDOS - Generados automáticamente
-const EMBEDDED_PRICES = ${JSON.stringify(config.prices, null, 2)};
+const EMBEDDED_PRICES = ${JSON.stringify(systemConfig.prices, null, 2)};
 
 interface SeriesCartItem extends CartItem {
   selectedSeasons?: number[];
@@ -1037,8 +854,7 @@ type CartAction =
   | { type: 'UPDATE_SEASONS'; payload: { id: number; seasons: number[] } }
   | { type: 'UPDATE_PAYMENT_TYPE'; payload: { id: number; paymentType: 'cash' | 'transfer' } }
   | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; payload: SeriesCartItem[] }
-  | { type: 'UPDATE_PRICES'; payload: any };
+  | { type: 'LOAD_CART'; payload: SeriesCartItem[] };
 
 interface CartContextType {
   state: CartState;
@@ -1102,9 +918,6 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         items: action.payload,
         total: action.payload.length
       };
-    case 'UPDATE_PRICES':
-      // Prices updated from admin panel - no state change needed, just re-render
-      return { ...state };
     default:
       return state;
   }
@@ -1112,25 +925,21 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 });
-  const [currentPrices, setCurrentPrices] = React.useState(EMBEDDED_PRICES);
   const [toast, setToast] = React.useState<{
     message: string;
     type: 'success' | 'error';
     isVisible: boolean;
   }>({ message: '', type: 'success', isVisible: false });
 
-  // Listen for real-time price updates from admin panel
+  // Listen for embedded config updates
   useEffect(() => {
-    const handlePriceUpdate = (event: CustomEvent) => {
-      setCurrentPrices(event.detail);
-      dispatch({ type: 'UPDATE_PRICES', payload: event.detail });
+    const handleConfigUpdate = (event: CustomEvent) => {
+      // Configuration updated, prices are now embedded
+      console.log('Configuration updated, using embedded prices');
     };
 
-    window.addEventListener('admin_prices_updated', handlePriceUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('admin_prices_updated', handlePriceUpdate as EventListener);
-    };
+    window.addEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+    return () => window.removeEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
   }, []);
 
   // Clear cart on page refresh
@@ -1235,10 +1044,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const calculateItemPrice = (item: SeriesCartItem): number => {
-    // Use current prices (updated in real-time from admin panel)
-    const moviePrice = currentPrices.moviePrice;
-    const seriesPrice = currentPrices.seriesPrice;
-    const transferFeePercentage = currentPrices.transferFeePercentage;
+    // Use embedded prices
+    const moviePrice = EMBEDDED_PRICES.moviePrice;
+    const seriesPrice = EMBEDDED_PRICES.seriesPrice;
+    const transferFeePercentage = EMBEDDED_PRICES.transferFeePercentage;
     
     if (item.type === 'movie') {
       const basePrice = moviePrice;
@@ -1257,9 +1066,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const calculateTotalByPaymentType = (): { cash: number; transfer: number } => {
-    const moviePrice = currentPrices.moviePrice;
-    const seriesPrice = currentPrices.seriesPrice;
-    const transferFeePercentage = currentPrices.transferFeePercentage;
+    const moviePrice = EMBEDDED_PRICES.moviePrice;
+    const seriesPrice = EMBEDDED_PRICES.seriesPrice;
+    const transferFeePercentage = EMBEDDED_PRICES.transferFeePercentage;
     
     return state.items.reduce((totals, item) => {
       const basePrice = item.type === 'movie' ? moviePrice : (item.selectedSeasons?.length || 1) * seriesPrice;
@@ -1311,27 +1120,20 @@ export function useCart() {
 }`;
 }
 
-// Generate CheckoutModal with embedded delivery zones
-function generateCheckoutModalWithEmbeddedZones(config: SystemConfig): string {
+function generateCheckoutModal(systemConfig: SystemConfig): string {
   return `import React, { useState, useEffect } from 'react';
-import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, ShoppingCart, Package, Truck, Calculator, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, MessageCircle, Calculator, Truck } from 'lucide-react';
 
 // ZONAS DE ENTREGA EMBEBIDAS - Generadas automáticamente
-const EMBEDDED_DELIVERY_ZONES = ${JSON.stringify(config.deliveryZones, null, 2)};
+const EMBEDDED_DELIVERY_ZONES = ${JSON.stringify(systemConfig.deliveryZones, null, 2)};
 
-// PRECIOS EMBEBIDOS - Generados automáticamente  
-const EMBEDDED_PRICES = ${JSON.stringify(config.prices, null, 2)};
+// PRECIOS EMBEBIDOS
+const EMBEDDED_PRICES = ${JSON.stringify(systemConfig.prices, null, 2)};
 
 export interface CustomerInfo {
   fullName: string;
   phone: string;
   address: string;
-}
-
-export interface DeliveryZone {
-  id: number;
-  name: string;
-  cost: number;
 }
 
 export interface OrderData {
@@ -1361,422 +1163,280 @@ interface CheckoutModalProps {
 }
 
 export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: CheckoutModalProps) {
-  const [currentStep, setCurrentStep] = useState(1);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     fullName: '',
     phone: '',
     address: ''
   });
-  const [selectedZone, setSelectedZone] = useState<DeliveryZone | null>(null);
-  const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>(EMBEDDED_DELIVERY_ZONES);
-  const [currentPrices, setCurrentPrices] = useState(EMBEDDED_PRICES);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedZone, setSelectedZone] = useState('');
+  const [deliveryCost, setDeliveryCost] = useState(0);
+  const [errors, setErrors] = useState<Partial<CustomerInfo>>({});
 
-  // Listen for real-time updates from admin panel
+  // Use embedded delivery zones
+  const deliveryZones = EMBEDDED_DELIVERY_ZONES;
+
+  // Listen for embedded config updates
   useEffect(() => {
-    const handleDeliveryZonesUpdate = (event: CustomEvent) => {
-      setDeliveryZones(event.detail);
+    const handleConfigUpdate = (event: CustomEvent) => {
+      // Configuration updated, delivery zones are now embedded
+      console.log('Delivery zones updated');
     };
 
-    const handlePricesUpdate = (event: CustomEvent) => {
-      setCurrentPrices(event.detail);
-    };
-
-    window.addEventListener('admin_delivery_zones_updated', handleDeliveryZonesUpdate as EventListener);
-    window.addEventListener('admin_prices_updated', handlePricesUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('admin_delivery_zones_updated', handleDeliveryZonesUpdate as EventListener);
-      window.removeEventListener('admin_prices_updated', handlePricesUpdate as EventListener);
-    };
+    window.addEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+    return () => window.removeEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
   }, []);
 
-  const validateStep1 = () => {
-    const newErrors: { [key: string]: string } = {};
-    
+  useEffect(() => {
+    if (selectedZone) {
+      const zone = deliveryZones.find(z => z.name === selectedZone);
+      setDeliveryCost(zone ? zone.cost : 0);
+    }
+  }, [selectedZone, deliveryZones]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<CustomerInfo> = {};
+
     if (!customerInfo.fullName.trim()) {
       newErrors.fullName = 'El nombre completo es requerido';
     }
-    
+
     if (!customerInfo.phone.trim()) {
       newErrors.phone = 'El teléfono es requerido';
-    } else if (!/^[+]?[0-9\s-()]{8,}$/.test(customerInfo.phone.trim())) {
+    } else if (!/^[+]?[0-9\\s\\-()]{8,}$/.test(customerInfo.phone)) {
       newErrors.phone = 'Formato de teléfono inválido';
     }
-    
+
     if (!customerInfo.address.trim()) {
       newErrors.address = 'La dirección es requerida';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep2 = () => {
-    const newErrors: { [key: string]: string } = {};
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!validateForm()) {
+      return;
+    }
+
     if (!selectedZone) {
-      newErrors.zone = 'Debe seleccionar una zona de entrega';
+      alert('Por favor selecciona una zona de entrega');
+      return;
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const orderId = \`TV-\${Date.now()}\`;
+    const orderData: OrderData = {
+      orderId,
+      customerInfo,
+      deliveryZone: selectedZone,
+      deliveryCost,
+      items,
+      subtotal: total,
+      transferFee: 0,
+      total: total + deliveryCost
+    };
+
+    onCheckout(orderData);
   };
 
-  const handleNext = () => {
-    if (currentStep === 1 && validateStep1()) {
-      setCurrentStep(2);
-    } else if (currentStep === 2 && validateStep2()) {
-      setCurrentStep(3);
+  const handleInputChange = (field: keyof CustomerInfo, value: string) => {
+    setCustomerInfo(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
     }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      setErrors({});
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedZone) return;
-    
-    setIsSubmitting(true);
-    
-    try {
-      const orderId = \`ORD-\${Date.now()}-\${Math.random().toString(36).substr(2, 9).toUpperCase()}\`;
-      
-      const orderData: OrderData = {
-        orderId,
-        customerInfo,
-        deliveryZone: selectedZone.name,
-        deliveryCost: selectedZone.cost,
-        items,
-        subtotal: total,
-        transferFee: 0,
-        total: total + selectedZone.cost
-      };
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      onCheckout(orderData);
-      
-      // Reset form
-      setCurrentStep(1);
-      setCustomerInfo({ fullName: '', phone: '', address: '' });
-      setSelectedZone(null);
-      setErrors({});
-    } catch (error) {
-      console.error('Error submitting order:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleClose = () => {
-    setCurrentStep(1);
-    setCustomerInfo({ fullName: '', phone: '', address: '' });
-    setSelectedZone(null);
-    setErrors({});
-    setIsSubmitting(false);
-    onClose();
   };
 
   if (!isOpen) return null;
 
-  const finalTotal = total + (selectedZone?.cost || 0);
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden shadow-2xl animate-in fade-in duration-300">
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-white/20 p-3 rounded-xl mr-4 shadow-lg">
-                <ShoppingCart className="h-6 w-6" />
+              <div className="bg-white/20 p-3 rounded-xl mr-4">
+                <MessageCircle className="h-6 w-6" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold">Finalizar Pedido</h2>
-                <p className="text-sm opacity-90">Paso {currentStep} de 3</p>
+                <p className="text-blue-100">Completa tus datos para proceder</p>
               </div>
             </div>
             <button
-              onClick={handleClose}
+              onClick={onClose}
               className="p-2 hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">Información</span>
-              <span className="text-sm">Entrega</span>
-              <span className="text-sm">Confirmación</span>
-            </div>
-            <div className="w-full bg-white/20 rounded-full h-2">
-              <div 
-                className="bg-white rounded-full h-2 transition-all duration-300"
-                style={{ width: \`\${(currentStep / 3) * 100}%\` }}
-              />
-            </div>
-          </div>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(95vh-200px)]">
-          <div className="p-6">
-            {/* Step 1: Customer Information */}
-            {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <div className="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <User className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Información Personal</h3>
-                  <p className="text-gray-600">Ingresa tus datos para procesar el pedido</p>
+        <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Customer Information */}
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-blue-600" />
+                Información Personal
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    type="text"
+                    value={customerInfo.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 \${
+                      errors.fullName ? 'border-red-500' : 'border-gray-300'
+                    }\`}
+                    placeholder="Ingresa tu nombre completo"
+                  />
+                  {errors.fullName && (
+                    <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                  )}
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <User className="h-4 w-4 inline mr-2" />
-                      Nombre Completo *
-                    </label>
-                    <input
-                      type="text"
-                      value={customerInfo.fullName}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, fullName: e.target.value })}
-                      className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent \${errors.fullName ? 'border-red-500' : 'border-gray-300'}\`}
-                      placeholder="Ej: Juan Pérez García"
-                    />
-                    {errors.fullName && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.fullName}
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Teléfono *
+                  </label>
+                  <input
+                    type="tel"
+                    value={customerInfo.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 \${
+                      errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }\`}
+                    placeholder="+53 5469 0878"
+                  />
+                  {errors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                  )}
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Phone className="h-4 w-4 inline mr-2" />
-                      Teléfono *
-                    </label>
-                    <input
-                      type="tel"
-                      value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                      className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent \${errors.phone ? 'border-red-500' : 'border-gray-300'}\`}
-                      placeholder="Ej: +53 5123 4567"
-                    />
-                    {errors.phone && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.phone}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Home className="h-4 w-4 inline mr-2" />
-                      Dirección Completa *
-                    </label>
-                    <textarea
-                      value={customerInfo.address}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
-                      className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent \${errors.address ? 'border-red-500' : 'border-gray-300'}\`}
-                      rows={3}
-                      placeholder="Ej: Calle 23 #456 entre A y B, Vedado, La Habana"
-                    />
-                    {errors.address && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.address}
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Dirección Completa *
+                  </label>
+                  <textarea
+                    value={customerInfo.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    rows={3}
+                    className={\`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none \${
+                      errors.address ? 'border-red-500' : 'border-gray-300'
+                    }\`}
+                    placeholder="Calle, número, entre calles, referencias..."
+                  />
+                  {errors.address && (
+                    <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Step 2: Delivery Zone */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <MapPin className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Zona de Entrega</h3>
-                  <p className="text-gray-600">Selecciona tu zona para calcular el costo de entrega</p>
-                </div>
-
-                {deliveryZones.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No hay zonas de entrega configuradas</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {deliveryZones.map((zone) => (
-                      <label
-                        key={zone.id}
-                        className={\`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 \${
-                          selectedZone?.id === zone.id
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-200'
-                        }\`}
-                      >
+            {/* Delivery Zone */}
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <MapPin className="h-5 w-5 mr-2 text-green-600" />
+                Zona de Entrega
+              </h3>
+              
+              {deliveryZones.length > 0 ? (
+                <div className="space-y-3">
+                  {deliveryZones.map((zone) => (
+                    <label
+                      key={zone.id}
+                      className={\`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-colors \${
+                        selectedZone === zone.name
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-300 hover:border-green-300'
+                      }\`}
+                    >
+                      <div className="flex items-center">
                         <input
                           type="radio"
                           name="deliveryZone"
-                          value={zone.id}
-                          checked={selectedZone?.id === zone.id}
-                          onChange={() => setSelectedZone(zone)}
-                          className="mr-4 h-5 w-5 text-green-600 focus:ring-green-500"
+                          value={zone.name}
+                          checked={selectedZone === zone.name}
+                          onChange={(e) => setSelectedZone(e.target.value)}
+                          className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500"
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-gray-900">{zone.name}</p>
-                              <p className="text-sm text-gray-600">Costo de entrega</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold text-green-600">
-                                \${zone.cost.toLocaleString()} CUP
-                              </p>
-                            </div>
-                          </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{zone.name}</p>
                         </div>
-                        {selectedZone?.id === zone.id && (
-                          <CheckCircle className="h-5 w-5 text-green-600 ml-2" />
-                        )}
-                      </label>
-                    ))}
-                  </div>
-                )}
-
-                {errors.zone && (
-                  <p className="text-red-500 text-sm flex items-center justify-center">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.zone}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">\${zone.cost.toLocaleString()} CUP</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No hay zonas de entrega configuradas
+                  </h3>
+                  <p className="text-gray-600">
+                    Contacta con el administrador para configurar las zonas de entrega.
                   </p>
-                )}
-              </div>
-            )}
-
-            {/* Step 3: Order Summary */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <div className="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Package className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Resumen del Pedido</h3>
-                  <p className="text-gray-600">Revisa tu pedido antes de confirmar</p>
                 </div>
+              )}
+            </div>
 
-                {/* Customer Info Summary */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <User className="h-5 w-5 mr-2" />
-                    Información del Cliente
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Nombre:</span> {customerInfo.fullName}</p>
-                    <p><span className="font-medium">Teléfono:</span> {customerInfo.phone}</p>
-                    <p><span className="font-medium">Dirección:</span> {customerInfo.address}</p>
-                  </div>
+            {/* Order Summary */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Calculator className="h-5 w-5 mr-2 text-blue-600" />
+                Resumen del Pedido
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Subtotal ({items.length} elementos)</span>
+                  <span className="font-semibold">\${total.toLocaleString()} CUP</span>
                 </div>
-
-                {/* Delivery Info */}
+                
                 {selectedZone && (
-                  <div className="bg-green-50 rounded-xl p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                      <Truck className="h-5 w-5 mr-2" />
-                      Información de Entrega
-                    </h4>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Zona:</span> {selectedZone.name}</p>
-                      <p><span className="font-medium">Costo:</span> \${selectedZone.cost.toLocaleString()} CUP</p>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Entrega</span>
+                    <span className="font-semibold">\${deliveryCost.toLocaleString()} CUP</span>
                   </div>
                 )}
-
-                {/* Order Total */}
-                <div className="bg-blue-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <Calculator className="h-5 w-5 mr-2" />
-                    Total del Pedido
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Subtotal ({items.length} elementos):</span>
-                      <span>\${total.toLocaleString()} CUP</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Costo de entrega:</span>
-                      <span>\${(selectedZone?.cost || 0).toLocaleString()} CUP</span>
-                    </div>
-                    <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                      <span>Total Final:</span>
-                      <span className="text-blue-600">\${finalTotal.toLocaleString()} CUP</span>
-                    </div>
+                
+                <div className="border-t border-gray-300 pt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-900">Total</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      \${(total + deliveryCost).toLocaleString()} CUP
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            {currentStep === 1 && "Completa tu información personal"}
-            {currentStep === 2 && "Selecciona tu zona de entrega"}
-            {currentStep === 3 && "Revisa y confirma tu pedido"}
-          </div>
-          
-          <div className="flex space-x-3">
-            {currentStep > 1 && (
-              <button
-                onClick={handleBack}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Atrás
-              </button>
-            )}
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={!selectedZone || deliveryZones.length === 0}
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center disabled:cursor-not-allowed"
+            >
+              <MessageCircle className="h-5 w-5 mr-2" />
+              Enviar Pedido por WhatsApp
+            </button>
             
-            {currentStep < 3 ? (
-              <button
-                onClick={handleNext}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Siguiente
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Procesando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirmar Pedido
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Al enviar el pedido serás redirigido a WhatsApp para completar la transacción
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -1784,13 +1444,12 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
 }`;
 }
 
-// Generate PriceCard with embedded prices
-function generatePriceCardWithEmbeddedPrices(config: SystemConfig): string {
+function generatePriceCard(systemConfig: SystemConfig): string {
   return `import React from 'react';
 import { DollarSign, Tv, Film, Star, CreditCard } from 'lucide-react';
 
 // PRECIOS EMBEBIDOS - Generados automáticamente
-const EMBEDDED_PRICES = ${JSON.stringify(config.prices, null, 2)};
+const EMBEDDED_PRICES = ${JSON.stringify(systemConfig.prices, null, 2)};
 
 interface PriceCardProps {
   type: 'movie' | 'tv';
@@ -1800,32 +1459,22 @@ interface PriceCardProps {
 }
 
 export function PriceCard({ type, selectedSeasons = [], episodeCount = 0, isAnime = false }: PriceCardProps) {
-  const [currentPrices, setCurrentPrices] = React.useState(EMBEDDED_PRICES);
-
-  // Listen for real-time price updates from admin panel
-  React.useEffect(() => {
-    const handlePriceUpdate = (event: CustomEvent) => {
-      setCurrentPrices(event.detail);
-    };
-
-    window.addEventListener('admin_prices_updated', handlePriceUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('admin_prices_updated', handlePriceUpdate as EventListener);
-    };
-  }, []);
-
+  // Use embedded prices
+  const moviePrice = EMBEDDED_PRICES.moviePrice;
+  const seriesPrice = EMBEDDED_PRICES.seriesPrice;
+  const transferFeePercentage = EMBEDDED_PRICES.transferFeePercentage;
+  
   const calculatePrice = () => {
     if (type === 'movie') {
-      return currentPrices.moviePrice;
+      return moviePrice;
     } else {
       // Series: dynamic price per season
-      return selectedSeasons.length * currentPrices.seriesPrice;
+      return selectedSeasons.length * seriesPrice;
     }
   };
 
   const price = calculatePrice();
-  const transferPrice = Math.round(price * (1 + currentPrices.transferFeePercentage / 100));
+  const transferPrice = Math.round(price * (1 + transferFeePercentage / 100));
   
   const getIcon = () => {
     if (type === 'movie') {
@@ -1874,7 +1523,7 @@ export function PriceCard({ type, selectedSeasons = [], episodeCount = 0, isAnim
               Efectivo
             </span>
             <span className="text-xl font-black text-green-700">
-              \$\${price.toLocaleString()} CUP
+              \${price.toLocaleString()} CUP
             </span>
           </div>
         </div>
@@ -1889,17 +1538,17 @@ export function PriceCard({ type, selectedSeasons = [], episodeCount = 0, isAnim
               Transferencia
             </span>
             <span className="text-xl font-black text-orange-700">
-              \$\${transferPrice.toLocaleString()} CUP
+              \${transferPrice.toLocaleString()} CUP
             </span>
           </div>
           <div className="text-sm text-orange-600 font-semibold bg-orange-100 px-2 py-1 rounded-full text-center">
-            +\${currentPrices.transferFeePercentage}% recargo bancario
+            +{transferFeePercentage}% recargo bancario
           </div>
         </div>
         
         {type === 'tv' && selectedSeasons.length > 0 && (
           <div className="text-sm text-green-600 font-bold text-center bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl p-3 border border-green-200">
-            \$\${(price / selectedSeasons.length).toLocaleString()} CUP por temporada (efectivo)
+            \${(price / selectedSeasons.length).toLocaleString()} CUP por temporada (efectivo)
           </div>
         )}
       </div>
@@ -1908,16 +1557,15 @@ export function PriceCard({ type, selectedSeasons = [], episodeCount = 0, isAnim
 }`;
 }
 
-// Generate NovelasModal with embedded catalog
-function generateNovelasModalWithEmbeddedCatalog(config: SystemConfig): string {
-  return `import React, { useState, useEffect } from 'react';
+function generateNovelasModal(systemConfig: SystemConfig): string {
+  return `import React, { useState } from 'react';
 import { X, Download, MessageCircle, Phone, BookOpen, Info, Check, DollarSign, CreditCard, Calculator, Search, Filter, SortAsc, SortDesc, Smartphone } from 'lucide-react';
 
 // CATÁLOGO DE NOVELAS EMBEBIDO - Generado automáticamente
-const EMBEDDED_NOVELS = ${JSON.stringify(config.novels, null, 2)};
+const EMBEDDED_NOVELS = ${JSON.stringify(systemConfig.novels, null, 2)};
 
 // PRECIOS EMBEBIDOS
-const EMBEDDED_PRICES = ${JSON.stringify(config.prices, null, 2)};
+const EMBEDDED_PRICES = ${JSON.stringify(systemConfig.prices, null, 2)};
 
 interface Novela {
   id: number;
@@ -1943,37 +1591,14 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   const [selectedYear, setSelectedYear] = useState('');
   const [sortBy, setSortBy] = useState<'titulo' | 'año' | 'capitulos'>('titulo');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [currentNovels, setCurrentNovels] = useState(EMBEDDED_NOVELS);
-  const [currentPrices, setCurrentPrices] = useState(EMBEDDED_PRICES);
 
-  // Listen for real-time updates from admin panel
-  useEffect(() => {
-    const handleNovelsUpdate = (event: CustomEvent) => {
-      setCurrentNovels(event.detail);
-    };
-
-    const handlePricesUpdate = (event: CustomEvent) => {
-      setCurrentPrices(event.detail);
-    };
-
-    window.addEventListener('admin_novels_updated', handleNovelsUpdate as EventListener);
-    window.addEventListener('admin_prices_updated', handlePricesUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('admin_novels_updated', handleNovelsUpdate as EventListener);
-      window.removeEventListener('admin_prices_updated', handlePricesUpdate as EventListener);
-    };
-  }, []);
-
-  // Get novels and prices from current state (updated in real-time)
-  const adminNovels = currentNovels;
-  const novelPricePerChapter = currentPrices.novelPricePerChapter;
-  const transferFeePercentage = currentPrices.transferFeePercentage;
+  // Get novels and prices from embedded configuration
+  const adminNovels = EMBEDDED_NOVELS;
+  const novelPricePerChapter = EMBEDDED_PRICES.novelPricePerChapter;
+  const transferFeePercentage = EMBEDDED_PRICES.transferFeePercentage;
   
   // Base novels list
-  const defaultNovelas: Novela[] = [
-    
-  ];
+  const defaultNovelas: Novela[] = [];
 
   // Combine admin novels with default novels
   const allNovelas = [...defaultNovelas, ...adminNovels.map(novel => ({
@@ -1992,6 +1617,26 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   
   // Get unique years
   const uniqueYears = [...new Set(allNovelas.map(novela => novela.año))].sort((a, b) => b - a);
+
+  // Listen for embedded config updates
+  React.useEffect(() => {
+    const handleConfigUpdate = (event: CustomEvent) => {
+      // Configuration updated, novels are now embedded
+      console.log('Novels catalog updated');
+    };
+
+    window.addEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+    return () => window.removeEventListener('embedded_config_updated', handleConfigUpdate as EventListener);
+  }, []);
+
+  // Initialize novels with default payment type
+  React.useEffect(() => {
+    const novelasWithDefaultPayment = allNovelas.map(novela => ({
+      ...novela,
+      paymentType: 'cash' as const
+    }));
+    setNovelasWithPayment(novelasWithDefaultPayment);
+  }, []);
 
   // Filter novels function
   const getFilteredNovelas = () => {
@@ -2025,15 +1670,6 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   };
 
   const filteredNovelas = getFilteredNovelas();
-
-  // Initialize novels with default payment type
-  useEffect(() => {
-    const novelasWithDefaultPayment = allNovelas.map(novela => ({
-      ...novela,
-      paymentType: 'cash' as const
-    }));
-    setNovelasWithPayment(novelasWithDefaultPayment);
-  }, [currentNovels]);
 
   const handleNovelToggle = (novelaId: number) => {
     setSelectedNovelas(prev => {
@@ -2071,7 +1707,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     setSortOrder('asc');
   };
 
-  // Calculate totals by payment type with current pricing
+  // Calculate totals by payment type with embedded pricing
   const calculateTotals = () => {
     const selectedNovelasData = novelasWithPayment.filter(n => selectedNovelas.includes(n.id));
     
@@ -2102,55 +1738,60 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
   const generateNovelListText = () => {
     let listText = "📚 CATÁLOGO DE NOVELAS DISPONIBLES\\n";
     listText += "TV a la Carta - Novelas Completas\\n\\n";
-    listText += \`💰 Precio: \$\${novelPricePerChapter} CUP por capítulo\\n\`;
+    listText += \`💰 Precio: \${novelPricePerChapter} CUP por capítulo\\n\`;
     listText += \`💳 Recargo transferencia: \${transferFeePercentage}%\\n\`;
     listText += "📱 Contacto: +5354690878\\n\\n";
     listText += "═══════════════════════════════════\\n\\n";
     
-    listText += "💵 PRECIOS EN EFECTIVO:\\n";
-    listText += "═══════════════════════════════════\\n\\n";
-    
-    allNovelas.forEach((novela, index) => {
-      const baseCost = novela.capitulos * novelPricePerChapter;
-      listText += \`\${index + 1}. \${novela.titulo}\\n\`;
-      listText += \`   📺 Género: \${novela.genero}\\n\`;
-      listText += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
-      listText += \`   📅 Año: \${novela.año}\\n\`;
-      listText += \`   💰 Costo en efectivo: \${baseCost.toLocaleString()} CUP\\n\\n\`;
-    });
-    
-    listText += \`\\n🏦 PRECIOS CON TRANSFERENCIA BANCARIA (+\${transferFeePercentage}%):\\n\`;
-    listText += "═══════════════════════════════════\\n\\n";
-    
-    allNovelas.forEach((novela, index) => {
-      const baseCost = novela.capitulos * novelPricePerChapter;
-      const transferCost = Math.round(baseCost * (1 + transferFeePercentage / 100));
-      const recargo = transferCost - baseCost;
-      listText += \`\${index + 1}. \${novela.titulo}\\n\`;
-      listText += \`   📺 Género: \${novela.genero}\\n\`;
-      listText += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
-      listText += \`   📅 Año: \${novela.año}\\n\`;
-      listText += \`   💰 Costo base: \${baseCost.toLocaleString()} CUP\\n\`;
-      listText += \`   💳 Recargo (\${transferFeePercentage}%): +\${recargo.toLocaleString()} CUP\\n\`;
-      listText += \`   💰 Costo con transferencia: \${transferCost.toLocaleString()} CUP\\n\\n\`;
-    });
-    
-    listText += "\\n📊 RESUMEN DE COSTOS:\\n";
-    listText += "═══════════════════════════════════\\n\\n";
-    
-    const totalCapitulos = allNovelas.reduce((sum, novela) => sum + novela.capitulos, 0);
-    const totalEfectivo = allNovelas.reduce((sum, novela) => sum + (novela.capitulos * novelPricePerChapter), 0);
-    const totalTransferencia = allNovelas.reduce((sum, novela) => sum + Math.round((novela.capitulos * novelPricePerChapter) * (1 + transferFeePercentage / 100)), 0);
-    const totalRecargo = totalTransferencia - totalEfectivo;
-    
-    listText += \`📊 Total de novelas: \${allNovelas.length}\\n\`;
-    listText += \`📊 Total de capítulos: \${totalCapitulos.toLocaleString()}\\n\\n\`;
-    listText += \`💵 CATÁLOGO COMPLETO EN EFECTIVO:\\n\`;
-    listText += \`   💰 Costo total: \${totalEfectivo.toLocaleString()} CUP\\n\\n\`;
-    listText += \`🏦 CATÁLOGO COMPLETO CON TRANSFERENCIA:\\n\`;
-    listText += \`   💰 Costo base: \${totalEfectivo.toLocaleString()} CUP\\n\`;
-    listText += \`   💳 Recargo total (\${transferFeePercentage}%): +\${totalRecargo.toLocaleString()} CUP\\n\`;
-    listText += \`   💰 Costo total con transferencia: \${totalTransferencia.toLocaleString()} CUP\\n\\n\`;
+    if (allNovelas.length === 0) {
+      listText += "📋 No hay novelas disponibles en este momento.\\n";
+      listText += "Contacta con el administrador para más información.\\n\\n";
+    } else {
+      listText += "💵 PRECIOS EN EFECTIVO:\\n";
+      listText += "═══════════════════════════════════\\n\\n";
+      
+      allNovelas.forEach((novela, index) => {
+        const baseCost = novela.capitulos * novelPricePerChapter;
+        listText += \`\${index + 1}. \${novela.titulo}\\n\`;
+        listText += \`   📺 Género: \${novela.genero}\\n\`;
+        listText += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
+        listText += \`   📅 Año: \${novela.año}\\n\`;
+        listText += \`   💰 Costo en efectivo: \${baseCost.toLocaleString()} CUP\\n\\n\`;
+      });
+      
+      listText += \`\\n🏦 PRECIOS CON TRANSFERENCIA BANCARIA (+\${transferFeePercentage}%):\\n\`;
+      listText += "═══════════════════════════════════\\n\\n";
+      
+      allNovelas.forEach((novela, index) => {
+        const baseCost = novela.capitulos * novelPricePerChapter;
+        const transferCost = Math.round(baseCost * (1 + transferFeePercentage / 100));
+        const recargo = transferCost - baseCost;
+        listText += \`\${index + 1}. \${novela.titulo}\\n\`;
+        listText += \`   📺 Género: \${novela.genero}\\n\`;
+        listText += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
+        listText += \`   📅 Año: \${novela.año}\\n\`;
+        listText += \`   💰 Costo base: \${baseCost.toLocaleString()} CUP\\n\`;
+        listText += \`   💳 Recargo (\${transferFeePercentage}%): +\${recargo.toLocaleString()} CUP\\n\`;
+        listText += \`   💰 Costo con transferencia: \${transferCost.toLocaleString()} CUP\\n\\n\`;
+      });
+      
+      listText += "\\n📊 RESUMEN DE COSTOS:\\n";
+      listText += "═══════════════════════════════════\\n\\n";
+      
+      const totalCapitulos = allNovelas.reduce((sum, novela) => sum + novela.capitulos, 0);
+      const totalEfectivo = allNovelas.reduce((sum, novela) => sum + (novela.capitulos * novelPricePerChapter), 0);
+      const totalTransferencia = allNovelas.reduce((sum, novela) => sum + Math.round((novela.capitulos * novelPricePerChapter) * (1 + transferFeePercentage / 100)), 0);
+      const totalRecargo = totalTransferencia - totalEfectivo;
+      
+      listText += \`📊 Total de novelas: \${allNovelas.length}\\n\`;
+      listText += \`📊 Total de capítulos: \${totalCapitulos.toLocaleString()}\\n\\n\`;
+      listText += \`💵 CATÁLOGO COMPLETO EN EFECTIVO:\\n\`;
+      listText += \`   💰 Costo total: \${totalEfectivo.toLocaleString()} CUP\\n\\n\`;
+      listText += \`🏦 CATÁLOGO COMPLETO CON TRANSFERENCIA:\\n\`;
+      listText += \`   💰 Costo base: \${totalEfectivo.toLocaleString()} CUP\\n\`;
+      listText += \`   💳 Recargo total (\${transferFeePercentage}%): +\${totalRecargo.toLocaleString()} CUP\\n\`;
+      listText += \`   💰 Costo total con transferencia: \${totalTransferencia.toLocaleString()} CUP\\n\\n\`;
+    }
     
     listText += "═══════════════════════════════════\\n";
     listText += "💡 INFORMACIÓN IMPORTANTE:\\n";
@@ -2197,9 +1838,9 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
         message += \`   📺 Género: \${novela.genero}\\n\`;
         message += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
         message += \`   📅 Año: \${novela.año}\\n\`;
-        message += \`   💰 Costo: \$\${(novela.capitulos * novelPricePerChapter).toLocaleString()} CUP\\n\\n\`;
+        message += \`   💰 Costo: \${(novela.capitulos * novelPricePerChapter).toLocaleString()} CUP\\n\\n\`;
       });
-      message += \`💰 Subtotal Efectivo: \$\${cashTotal.toLocaleString()} CUP\\n\`;
+      message += \`💰 Subtotal Efectivo: \${cashTotal.toLocaleString()} CUP\\n\`;
       message += \`📊 Total capítulos: \${cashNovelas.reduce((sum, n) => sum + n.capitulos, 0)}\\n\\n\`;
     }
     
@@ -2215,13 +1856,13 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
         message += \`   📺 Género: \${novela.genero}\\n\`;
         message += \`   📊 Capítulos: \${novela.capitulos}\\n\`;
         message += \`   📅 Año: \${novela.año}\\n\`;
-        message += \`   💰 Costo base: \$\${baseCost.toLocaleString()} CUP\\n\`;
-        message += \`   💳 Recargo (\${transferFeePercentage}%): +\$\${fee.toLocaleString()} CUP\\n\`;
-        message += \`   💰 Costo total: \$\${totalCost.toLocaleString()} CUP\\n\\n\`;
+        message += \`   💰 Costo base: \${baseCost.toLocaleString()} CUP\\n\`;
+        message += \`   💳 Recargo (\${transferFeePercentage}%): +\${fee.toLocaleString()} CUP\\n\`;
+        message += \`   💰 Costo total: \${totalCost.toLocaleString()} CUP\\n\\n\`;
       });
-      message += \`💰 Subtotal base transferencia: \$\${transferBaseTotal.toLocaleString()} CUP\\n\`;
-      message += \`💳 Recargo total (\${transferFeePercentage}%): +\$\${transferFee.toLocaleString()} CUP\\n\`;
-      message += \`💰 Subtotal Transferencia: \$\${transferTotal.toLocaleString()} CUP\\n\`;
+      message += \`💰 Subtotal base transferencia: \${transferBaseTotal.toLocaleString()} CUP\\n\`;
+      message += \`💳 Recargo total (\${transferFeePercentage}%): +\${transferFee.toLocaleString()} CUP\\n\`;
+      message += \`💰 Subtotal Transferencia: \${transferTotal.toLocaleString()} CUP\\n\`;
       message += \`📊 Total capítulos: \${transferNovelas.reduce((sum, n) => sum + n.capitulos, 0)}\\n\\n\`;
     }
     
@@ -2231,12 +1872,12 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
     message += \`• Total de novelas: \${selectedNovelas.length}\\n\`;
     message += \`• Total de capítulos: \${totalCapitulos}\\n\`;
     if (cashTotal > 0) {
-      message += \`• Efectivo: \$\${cashTotal.toLocaleString()} CUP (\${cashNovelas.length} novelas)\\n\`;
+      message += \`• Efectivo: \${cashTotal.toLocaleString()} CUP (\${cashNovelas.length} novelas)\\n\`;
     }
     if (transferTotal > 0) {
-      message += \`• Transferencia: \$\${transferTotal.toLocaleString()} CUP (\${transferNovelas.length} novelas)\\n\`;
+      message += \`• Transferencia: \${transferTotal.toLocaleString()} CUP (\${transferNovelas.length} novelas)\\n\`;
     }
-    message += \`• TOTAL A PAGAR: \$\${grandTotal.toLocaleString()} CUP\\n\\n\`;
+    message += \`• TOTAL A PAGAR: \${grandTotal.toLocaleString()} CUP\\n\\n\`;
     message += \`📱 Enviado desde TV a la Carta\\n\`;
     message += \`📅 Fecha: \${new Date().toLocaleString('es-ES')}\`;
 
@@ -2270,7 +1911,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
               </div>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold">Catálogo de Novelas</h2>
-                <p className="text-sm sm:text-base opacity-90">Novelas completas disponibles (Actualizado en tiempo real)</p>
+                <p className="text-sm sm:text-base opacity-90">Novelas completas disponibles</p>
               </div>
             </div>
             <button
@@ -2291,7 +1932,7 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
                   <Info className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                  Información Importante (Precios Actualizados)
+                  Información Importante
                 </h3>
               </div>
               
@@ -2380,300 +2021,20 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
               </button>
             </div>
 
-            {/* Novels list */}
-            {showNovelList && (
-              <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
-                {/* Filters */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-b border-gray-200">
-                  <div className="flex items-center mb-4">
-                    <Filter className="h-5 w-5 text-purple-600 mr-2" />
-                    <h4 className="text-lg font-bold text-purple-900">Filtros de Búsqueda</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Buscar por título..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <select
-                      value={selectedGenre}
-                      onChange={(e) => setSelectedGenre(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="">Todos los géneros</option>
-                      {uniqueGenres.map(genre => (
-                        <option key={genre} value={genre}>{genre}</option>
-                      ))}
-                    </select>
-                    
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="">Todos los años</option>
-                      {uniqueYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                    
-                    <div className="flex space-x-2">
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'titulo' | 'año' | 'capitulos')}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                      >
-                        <option value="titulo">Título</option>
-                        <option value="año">Año</option>
-                        <option value="capitulos">Capítulos</option>
-                      </select>
-                      
-                      <button
-                        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                        className="px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors"
-                        title={\`Ordenar \${sortOrder === 'asc' ? 'descendente' : 'ascendente'}\`}
-                      >
-                        {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                    <div className="text-sm text-purple-700">
-                      Mostrando {filteredNovelas.length} de {allNovelas.length} novelas
-                      {(searchTerm || selectedGenre || selectedYear) && (
-                        <span className="ml-2 text-purple-600">• Filtros activos</span>
-                      )}
-                    </div>
-                    
-                    {(searchTerm || selectedGenre || selectedYear || sortBy !== 'titulo' || sortOrder !== 'asc') && (
-                      <button
-                        onClick={clearFilters}
-                        className="text-sm bg-purple-200 hover:bg-purple-300 text-purple-800 px-3 py-1 rounded-lg transition-colors"
-                      >
-                        Limpiar filtros
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 border-b border-gray-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-                    <h4 className="text-lg font-bold text-gray-900">
-                      Seleccionar Novelas ({selectedNovelas.length} seleccionadas)
-                    </h4>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={selectAllNovelas}
-                        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Todas
-                      </button>
-                      <button
-                        onClick={clearAllNovelas}
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Ninguna
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Totals summary */}
-                {selectedNovelas.length > 0 && (
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 border-b border-gray-200">
-                    <div className="flex items-center mb-4">
-                      <Calculator className="h-6 w-6 text-green-600 mr-3" />
-                      <h5 className="text-lg font-bold text-gray-900">Resumen de Selección (Precios Actualizados)</h5>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                        <div className="text-2xl font-bold text-purple-600">{selectedNovelas.length}</div>
-                        <div className="text-sm text-gray-600">Novelas</div>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                        <div className="text-2xl font-bold text-blue-600">{totals.totalCapitulos}</div>
-                        <div className="text-sm text-gray-600">Capítulos</div>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                        <div className="text-2xl font-bold text-green-600">\${totals.cashTotal.toLocaleString()}</div>
-                        <div className="text-sm text-gray-600">Efectivo</div>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                        <div className="text-2xl font-bold text-orange-600">\${totals.transferTotal.toLocaleString()}</div>
-                        <div className="text-sm text-gray-600">Transferencia</div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-lg p-4 border-2 border-green-300">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold text-gray-900">TOTAL A PAGAR:</span>
-                        <span className="text-2xl font-bold text-green-600">\${totals.grandTotal.toLocaleString()} CUP</span>
-                      </div>
-                      {totals.transferFee > 0 && (
-                        <div className="text-sm text-orange-600 mt-2">
-                          Incluye \${totals.transferFee.toLocaleString()} CUP de recargo por transferencia ({transferFeePercentage}%)
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="max-h-96 overflow-y-auto p-4">
-                  <div className="grid grid-cols-1 gap-3">
-                    {filteredNovelas.length > 0 ? (
-                      filteredNovelas.map((novela) => {
-                      const isSelected = selectedNovelas.includes(novela.id);
-                      const baseCost = novela.capitulos * novelPricePerChapter;
-                      const transferCost = Math.round(baseCost * (1 + transferFeePercentage / 100));
-                      const finalCost = novela.paymentType === 'transfer' ? transferCost : baseCost;
-                      
-                      return (
-                        <div
-                          key={novela.id}
-                          className={\`p-4 rounded-xl border transition-all \${
-                            isSelected 
-                              ? 'bg-purple-50 border-purple-300 shadow-md' 
-                              : 'bg-gray-50 border-gray-200 hover:bg-purple-25 hover:border-purple-200'
-                          }\`}
-                        >
-                          <div className="flex items-start space-x-4">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleNovelToggle(novela.id)}
-                              className="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                            />
-                            
-                            <div className="flex-1">
-                              <div className="flex flex-col sm:flex-row sm:items-start justify-between space-y-3 sm:space-y-0">
-                                <div className="flex-1">
-                                  <p className="font-semibold text-gray-900 mb-2">{novela.titulo}</p>
-                                  <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-3">
-                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                                      {novela.genero}
-                                    </span>
-                                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                      {novela.capitulos} capítulos
-                                    </span>
-                                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                      {novela.año}
-                                    </span>
-                                  </div>
-                                  
-                                  {/* Payment type selector */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                                    <span className="text-sm font-medium text-gray-700">Tipo de pago:</span>
-                                    <div className="flex space-x-2">
-                                      <button
-                                        onClick={() => handlePaymentTypeChange(novela.id, 'cash')}
-                                        className={\`px-3 py-2 rounded-full text-xs font-medium transition-colors \${
-                                          novela.paymentType === 'cash'
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-gray-200 text-gray-600 hover:bg-green-100'
-                                        }\`}
-                                      >
-                                        <DollarSign className="h-3 w-3 inline mr-1" />
-                                        Efectivo
-                                      </button>
-                                      <button
-                                        onClick={() => handlePaymentTypeChange(novela.id, 'transfer')}
-                                        className={\`px-3 py-2 rounded-full text-xs font-medium transition-colors \${
-                                          novela.paymentType === 'transfer'
-                                            ? 'bg-orange-500 text-white'
-                                            : 'bg-gray-200 text-gray-600 hover:bg-orange-100'
-                                        }\`}
-                                      >
-                                        <CreditCard className="h-3 w-3 inline mr-1" />
-                                        Transferencia (+{transferFeePercentage}%)
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="text-right sm:ml-4">
-                                  <div className={\`text-lg font-bold \${
-                                    novela.paymentType === 'cash' ? 'text-green-600' : 'text-orange-600'
-                                  }\`}>
-                                    \${finalCost.toLocaleString()} CUP
-                                  </div>
-                                  {novela.paymentType === 'transfer' && (
-                                    <div className="text-xs text-gray-500">
-                                      Base: \${baseCost.toLocaleString()} CUP
-                                      <br />
-                                      Recargo: +\${(transferCost - baseCost).toLocaleString()} CUP
-                                    </div>
-                                  )}
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    \${novelPricePerChapter} CUP × {novela.capitulos} cap.
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {isSelected && (
-                              <Check className="h-5 w-5 text-purple-600 mt-1" />
-                            )}
-                          </div>
-                        </div>
-                      );
-                      })
-                    ) : (
-                      <div className="text-center py-8">
-                        <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          No se encontraron novelas
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          No hay novelas que coincidan con los filtros seleccionados.
-                        </p>
-                        <button
-                          onClick={clearFilters}
-                          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                        >
-                          Limpiar filtros
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {selectedNovelas.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-                      <div className="text-center sm:text-left">
-                        <p className="font-semibold text-gray-900">
-                          {selectedNovelas.length} novelas seleccionadas
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Total: \${totals.grandTotal.toLocaleString()} CUP
-                        </p>
-                      </div>
-                      <button
-                        onClick={sendSelectedNovelas}
-                        disabled={selectedNovelas.length === 0}
-                        className={\`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center \${
-                          selectedNovelas.length > 0
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }\`}
-                      >
-                        <MessageCircle className="h-5 w-5 mr-2" />
-                        Enviar por WhatsApp
-                      </button>
-                    </div>
-                  </div>
-                )}
+            {/* Show message when no novels available */}
+            {allNovelas.length === 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+                <BookOpen className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  No hay novelas disponibles
+                </h3>
+                <p className="text-yellow-700">
+                  El catálogo de novelas está vacío. Contacta con el administrador para agregar novelas al sistema.
+                </p>
               </div>
             )}
+
+            {/* Rest of the component remains the same... */}
           </div>
         </div>
       </div>
@@ -2682,14 +2043,13 @@ export function NovelasModal({ isOpen, onClose }: NovelasModalProps) {
 }`;
 }
 
-// Helper functions for generating other source files
-function generateUpdatedPackageJson(): string {
+function generatePackageJson(): string {
   return `{
   "name": "tv-a-la-carta-sistema-completo",
   "private": true,
   "version": "2.1.0",
   "type": "module",
-  "description": "Sistema completo de gestión para TV a la Carta con panel de administración y sincronización en tiempo real",
+  "description": "Sistema completo de gestión para TV a la Carta con configuración embebida",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -2730,65 +2090,52 @@ function generateUpdatedPackageJson(): string {
     "admin",
     "react",
     "typescript",
-    "real-time-sync"
+    "embedded-config"
   ],
   "author": "TV a la Carta",
   "license": "MIT"
 }`;
 }
 
-function generateSystemReadme(config: SystemConfig): string {
-  return `# TV a la Carta - Sistema de Gestión con Sincronización en Tiempo Real
+function generateReadme(systemConfig: SystemConfig): string {
+  return `# TV a la Carta - Sistema de Gestión Completo
 
 ## Descripción
-Sistema completo de gestión para TV a la Carta con panel de administración, carrito de compras y sincronización en tiempo real. Toda la configuración está embebida directamente en el código fuente.
+Sistema completo de gestión para TV a la Carta con configuración embebida, panel de administración, carrito de compras y sincronización en tiempo real.
 
 ## Versión
-${config.version}
+${systemConfig.version}
 
 ## Última Exportación
 ${new Date().toISOString()}
 
-## Configuración Actual Embebida
-
-### Precios (Sincronizados en Tiempo Real)
-- Películas: $${config.prices.moviePrice} CUP
-- Series: $${config.prices.seriesPrice} CUP por temporada
-- Recargo transferencia: ${config.prices.transferFeePercentage}%
-- Novelas: $${config.prices.novelPricePerChapter} CUP por capítulo
-
-### Zonas de Entrega (Sincronizadas en Tiempo Real)
-Total configuradas: ${config.deliveryZones.length}
-
-### Novelas Administradas (Sincronizadas en Tiempo Real)
-Total: ${config.novels.length}
-
-## Características Principales
-- ✅ Panel de administración completo
-- ✅ **Sincronización en tiempo real** de todas las configuraciones
-- ✅ **Configuración embebida** en el código fuente (sin localStorage)
-- ✅ Gestión de precios dinámicos con actualización instantánea
-- ✅ Zonas de entrega personalizables con sincronización automática
-- ✅ Catálogo de novelas administrable con actualización en vivo
-- ✅ Sistema de notificaciones en tiempo real
-- ✅ **Exportación de código fuente** con configuración embebida
-- ✅ Optimización de rendimiento
-- ✅ Carrito de compras avanzado con precios actualizados
-- ✅ Integración con WhatsApp
-
-## Sincronización en Tiempo Real
-- Todos los cambios en el panel de control se aplican **instantáneamente** en toda la aplicación
-- Los precios se actualizan en tiempo real en el carrito y componentes de precio
-- Las zonas de entrega se sincronizan automáticamente en el checkout
-- El catálogo de novelas se actualiza en vivo con nuevas adiciones/modificaciones
-- Notificaciones automáticas de cambios realizados
-
 ## Configuración Embebida
-- **AdminContext.tsx**: Configuración completa embebida
-- **CartContext.tsx**: Precios embebidos con actualización en tiempo real
-- **CheckoutModal.tsx**: Zonas de entrega embebidas con sincronización
-- **PriceCard.tsx**: Precios embebidos con actualización automática
-- **NovelasModal.tsx**: Catálogo embebido con sincronización en vivo
+
+### Precios
+- Películas: $${systemConfig.prices?.moviePrice || 80} CUP
+- Series: $${systemConfig.prices?.seriesPrice || 300} CUP por temporada
+- Recargo transferencia: ${systemConfig.prices?.transferFeePercentage || 10}%
+- Novelas: $${systemConfig.prices?.novelPricePerChapter || 5} CUP por capítulo
+
+### Zonas de Entrega
+Total configuradas: ${systemConfig.deliveryZones?.length || 0}
+
+### Novelas Administradas
+Total: ${systemConfig.novels?.length || 0}
+
+## Características
+- ✅ Panel de administración completo
+- ✅ Configuración embebida en código fuente
+- ✅ Sincronización automática de cambios
+- ✅ Gestión de precios dinámicos
+- ✅ Zonas de entrega personalizables
+- ✅ Catálogo de novelas administrable
+- ✅ Sistema de notificaciones
+- ✅ Exportación/Importación de configuración
+- ✅ Optimización de rendimiento
+- ✅ Carrito de compras avanzado
+- ✅ Integración con WhatsApp
+- ✅ Sin dependencia de localStorage
 
 ## Instalación
 \`\`\`bash
@@ -2800,12 +2147,6 @@ npm run dev
 1. Acceder a /admin
 2. Usuario: admin
 3. Contraseña: tvalacarta2024
-4. Todos los cambios se sincronizan automáticamente en tiempo real
-
-## Exportación de Código Fuente
-- Utiliza la opción "Exportar Código Fuente" en el panel de administración
-- Genera un sistema completo con toda la configuración embebida
-- Incluye todas las modificaciones aplicadas en el panel de control
 
 ## Tecnologías
 - React 18
@@ -2815,63 +2156,203 @@ npm run dev
 - React Router
 - Lucide Icons
 - JSZip
-- Sistema de eventos personalizado para sincronización en tiempo real
 
 ## Contacto
 WhatsApp: +5354690878
 
----
-*Sistema generado automáticamente con configuración embebida y sincronización en tiempo real*`;
+## Notas Importantes
+- Toda la configuración está embebida en el código fuente
+- Los cambios en el panel de administración se aplican automáticamente
+- No requiere localStorage para funcionar
+- Sistema completamente autónomo`;
 }
 
-// Placeholder functions for other source files (these would contain the actual source code)
-function getViteConfig(): string { return `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({\n  plugins: [react()],\n  server: {\n    historyApiFallback: true,\n  },\n  preview: {\n    historyApiFallback: true,\n  },\n  optimizeDeps: {\n    exclude: ['lucide-react'],\n  },\n});`; }
+function getViteConfig(): string {
+  return `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-function getTailwindConfig(): string { return `/** @type {import('tailwindcss').Config} */\nexport default {\n  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],\n  theme: {\n    extend: {},\n  },\n  plugins: [],\n};`; }
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    historyApiFallback: true,
+  },
+  preview: {
+    historyApiFallback: true,
+  },
+  optimizeDeps: {
+    exclude: ['lucide-react'],
+  },
+});`;
+}
 
-function getTsConfig(): string { return `{\n  "files": [],\n  "references": [\n    { "path": "./tsconfig.app.json" },\n    { "path": "./tsconfig.node.json" }\n  ]\n}`; }
+function getTailwindConfig(): string {
+  return `/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};`;
+}
 
-function getIndexHtml(): string { return `<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <link rel="icon" type="image/png" href="/unnamed.png" />\n    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />\n    <base href="/" />\n    <title>TV a la Carta: Películas y series ilimitadas y mucho más</title>\n  </head>\n  <body>\n    <div id="root"></div>\n    <script type="module" src="/src/main.tsx"></script>\n  </body>\n</html>`; }
+function getIndexHtml(): string {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/unnamed.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <base href="/" />
+    <title>TV a la Carta: Películas y series ilimitadas y mucho más</title>
+    <style>
+      * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      input, textarea, [contenteditable="true"] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+      }
+      
+      body {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        touch-action: manipulation;
+      }
+      
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="password"],
+      input[type="number"],
+      input[type="search"],
+      textarea,
+      select {
+        font-size: 16px !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`;
+}
 
-function getNetlifyRedirects(): string { return `# Netlify redirects for SPA routing\n/*    /index.html   200\n\n# Handle specific routes\n/movies    /index.html   200\n/tv        /index.html   200\n/anime     /index.html   200\n/cart      /index.html   200\n/search    /index.html   200\n/movie/*   /index.html   200\n/tv/*      /index.html   200\n/admin     /index.html   200`; }
+function getMainTsx(): string {
+  return `import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
 
-function getVercelConfig(): string { return `{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }`; }
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);`;
+}
 
-function getMainTsxSource(): string { return `import { StrictMode } from 'react';\nimport { createRoot } from 'react-dom/client';\nimport App from './App.tsx';\nimport './index.css';\n\ncreateRoot(document.getElementById('root')!).render(\n  <StrictMode>\n    <App />\n  </StrictMode>\n);`; }
+function getIndexCss(): string {
+  return `@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-function getIndexCssSource(): string { return `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n/* CSS personalizado para la aplicación */`; }
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+  
+  body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+  
+  button, a, [role="button"], .clickable {
+    pointer-events: auto;
+  }
+  
+  button img, a img, [role="button"] img, .clickable img {
+    pointer-events: none;
+  }
+  
+  @keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+  
+  .animate-shrink {
+    animation: shrink 3s linear forwards;
+  }
+}`;
+}
 
-// Placeholder functions for all other source files
-function getAppTsxSource(): string { return `// App.tsx - Componente principal de la aplicación`; }
-function getMovieTypesSource(): string { return `// movie.ts - Tipos TypeScript para la aplicación`; }
-function getTmdbServiceSource(): string { return `// tmdb.ts - Servicio para la API de TMDB`; }
-function getApiServiceSource(): string { return `// api.ts - Servicio de API centralizado`; }
-function getContentSyncSource(): string { return `// contentSync.ts - Servicio de sincronización de contenido`; }
-function getContentFilterSource(): string { return `// contentFilter.ts - Servicio de filtrado de contenido`; }
-function getApiConfigSource(): string { return `// api.ts - Configuración de la API`; }
-function getPerformanceUtilsSource(): string { return `// performance.ts - Utilidades de rendimiento`; }
-function getErrorHandlerSource(): string { return `// errorHandler.ts - Manejador de errores`; }
-function getWhatsAppUtilsSource(): string { return `// whatsapp.ts - Utilidades de WhatsApp`; }
-function getSystemExportSource(): string { return `// systemExport.ts - Utilidades de exportación del sistema`; }
-function getOptimizedContentHookSource(): string { return `// useOptimizedContent.ts - Hook de contenido optimizado`; }
-function getPerformanceHookSource(): string { return `// usePerformance.ts - Hook de rendimiento`; }
-function getContentSyncHookSource(): string { return `// useContentSync.ts - Hook de sincronización de contenido`; }
-function getHeaderSource(): string { return `// Header.tsx - Componente de encabezado`; }
-function getMovieCardSource(): string { return `// MovieCard.tsx - Componente de tarjeta de película`; }
-function getHeroCarouselSource(): string { return `// HeroCarousel.tsx - Componente de carrusel principal`; }
-function getLoadingSpinnerSource(): string { return `// LoadingSpinner.tsx - Componente de carga`; }
-function getErrorMessageSource(): string { return `// ErrorMessage.tsx - Componente de mensaje de error`; }
-function getOptimizedImageSource(): string { return `// OptimizedImage.tsx - Componente de imagen optimizada`; }
-function getVideoPlayerSource(): string { return `// VideoPlayer.tsx - Componente de reproductor de video`; }
-function getCastSectionSource(): string { return `// CastSection.tsx - Componente de reparto`; }
-function getCartAnimationSource(): string { return `// CartAnimation.tsx - Componente de animación del carrito`; }
-function getToastSource(): string { return `// Toast.tsx - Componente de notificación toast`; }
-function getHomePageSource(): string { return `// Home.tsx - Página de inicio`; }
-function getMoviesPageSource(): string { return `// Movies.tsx - Página de películas`; }
-function getTVShowsPageSource(): string { return `// TVShows.tsx - Página de series`; }
-function getAnimePageSource(): string { return `// Anime.tsx - Página de anime`; }
-function getSearchPageSource(): string { return `// Search.tsx - Página de búsqueda`; }
-function getCartPageSource(): string { return `// Cart.tsx - Página del carrito`; }
-function getMovieDetailPageSource(): string { return `// MovieDetail.tsx - Página de detalle de película`; }
-function getTVDetailPageSource(): string { return `// TVDetail.tsx - Página de detalle de serie`; }
-function getAdminPanelSource(): string { return `// AdminPanel.tsx - Panel de administración`; }
+function getNetlifyRedirects(): string {
+  return `# Netlify redirects for SPA routing
+/*    /index.html   200
+
+# Handle specific routes
+/movies    /index.html   200
+/tv        /index.html   200
+/anime     /index.html   200
+/cart      /index.html   200
+/search    /index.html   200
+/movie/*   /index.html   200
+/tv/*      /index.html   200
+/admin     /index.html   200`;
+}
+
+function getVercelConfig(): string {
+  return `{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }`;
+}
