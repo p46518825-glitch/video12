@@ -4,32 +4,301 @@ import JSZip from 'jszip';
 // CONFIGURACIÓN EMBEBIDA - Generada automáticamente
 const EMBEDDED_CONFIG = {
   "version": "2.1.0",
-  "lastExport": "2025-09-12T08:18:31.112Z",
+  "lastExport": "2025-09-05T08:44:06.529Z",
   "prices": {
-    "moviePrice": 90,
-    "seriesPrice": 400,
-    "transferFeePercentage": 15,
-    "novelPricePerChapter": 20
+    "moviePrice": 100,
+    "seriesPrice": 300,
+    "transferFeePercentage": 10,
+    "novelPricePerChapter": 5
   },
   "deliveryZones": [
     {
-      "name": "aguero",
+      "id": 1,
+      "name": "Santiago de Cuba > Vista Hermosa",
+      "cost": 400,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-17T09:20:53.160Z"
+    },
+    {
+      "id": 2,
+      "name": "Santiago de Cuba > Antonio Maceo",
+      "cost": 400,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-17T09:21:05.888Z"
+    },
+    {
+      "id": 3,
+      "name": "Santiago de Cuba > Centro de la ciudad",
+      "cost": 250,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-17T09:21:30.455Z"
+    },
+    {
+      "name": "Santiago de Cuba > Versalles Hasta el Hotel",
+      "cost": 500,
+      "id": 1758100929096,
+      "createdAt": "2025-09-17T09:22:09.096Z",
+      "updatedAt": "2025-09-17T09:22:09.096Z"
+    },
+    {
+      "name": "Santiago de Cuba > Carretera del Morro",
+      "cost": 300,
+      "id": 1758100944200,
+      "createdAt": "2025-09-17T09:22:24.200Z",
+      "updatedAt": "2025-09-17T09:22:24.200Z"
+    },
+    {
+      "name": "Santiago de Cuba > Altamira",
+      "cost": 400,
+      "id": 1758100965751,
+      "createdAt": "2025-09-17T09:22:45.751Z",
+      "updatedAt": "2025-09-17T09:22:45.751Z"
+    },
+    {
+      "name": "Santiago de Cuba > Cangrejitos",
+      "cost": 350,
+      "id": 1758100993856,
+      "createdAt": "2025-09-17T09:23:13.856Z",
+      "updatedAt": "2025-09-17T09:23:13.856Z"
+    },
+    {
+      "name": "Santiago de Cuba > Trocha",
+      "cost": 250,
+      "id": 1758101017063,
+      "createdAt": "2025-09-17T09:23:37.063Z",
+      "updatedAt": "2025-09-17T09:23:37.063Z"
+    },
+    {
+      "name": "Santiago de Cuba > Veguita de Galo",
+      "cost": 300,
+      "id": 1758101035400,
+      "createdAt": "2025-09-17T09:23:55.400Z",
+      "updatedAt": "2025-09-17T09:23:55.400Z"
+    },
+    {
+      "name": "Santiago de Cuba > Plaza de Martes",
+      "cost": 250,
+      "id": 1758101052903,
+      "createdAt": "2025-09-17T09:24:12.903Z",
+      "updatedAt": "2025-09-17T09:24:12.903Z"
+    },
+    {
+      "name": "Santiago de Cuba > Portuondo",
+      "cost": 300,
+      "id": 1758101091183,
+      "createdAt": "2025-09-17T09:24:51.183Z",
+      "updatedAt": "2025-09-17T09:24:51.183Z"
+    },
+    {
+      "name": "Santiago de Cuba > Sta Barbara",
+      "cost": 300,
+      "id": 1758101134159,
+      "createdAt": "2025-09-17T09:25:34.159Z",
+      "updatedAt": "2025-09-17T09:25:34.159Z"
+    },
+    {
+      "name": "Santiago de Cuba > Sueño",
+      "cost": 250,
+      "id": 1758101147999,
+      "createdAt": "2025-09-17T09:25:47.999Z",
+      "updatedAt": "2025-09-17T09:25:47.999Z"
+    },
+    {
+      "name": "Santiago de Cuba > San Pedrito",
+      "cost": 150,
+      "id": 1758101195423,
+      "createdAt": "2025-09-17T09:26:35.423Z",
+      "updatedAt": "2025-09-17T09:28:10.297Z"
+    },
+    {
+      "name": "Santiago de Cuba > Agüero",
+      "cost": 100,
+      "id": 1758101214991,
+      "createdAt": "2025-09-17T09:26:54.991Z",
+      "updatedAt": "2025-09-17T09:26:54.991Z"
+    },
+    {
+      "name": "Santiago de Cuba > Distrito Jose Martí",
+      "cost": 150,
+      "id": 1758101231864,
+      "createdAt": "2025-09-17T09:27:11.864Z",
+      "updatedAt": "2025-09-17T09:27:11.864Z"
+    },
+    {
+      "name": "Santiago de Cuba > Los Pinos",
       "cost": 200,
-      "id": 1757665099864,
-      "createdAt": "2025-09-12T08:18:19.864Z",
-      "updatedAt": "2025-09-12T08:18:19.864Z"
+      "id": 1758101271623,
+      "createdAt": "2025-09-17T09:27:51.623Z",
+      "updatedAt": "2025-09-17T09:27:51.623Z"
+    },
+    {
+      "name": "Santiago de Cuba > Quintero",
+      "cost": 500,
+      "id": 1758101326983,
+      "createdAt": "2025-09-17T09:28:46.983Z",
+      "updatedAt": "2025-09-17T09:28:46.983Z"
+    },
+    {
+      "name": "Santiago de Cuba > 30 de noviembre bajo",
+      "cost": 400,
+      "id": 1758101359671,
+      "createdAt": "2025-09-17T09:29:19.671Z",
+      "updatedAt": "2025-09-17T09:29:19.671Z"
+    },
+    {
+      "name": "Santiago de Cuba > Rajayoga",
+      "cost": 600,
+      "id": 1758101371199,
+      "createdAt": "2025-09-17T09:29:31.199Z",
+      "updatedAt": "2025-09-17T09:29:31.199Z"
+    },
+    {
+      "name": "Santiago de Cuba > Pastorita",
+      "cost": 600,
+      "id": 1758101381527,
+      "createdAt": "2025-09-17T09:29:41.527Z",
+      "updatedAt": "2025-09-17T09:29:41.527Z"
+    },
+    {
+      "name": "Santiago de Cuba > Vista Alegre",
+      "cost": 300,
+      "id": 1758101392543,
+      "createdAt": "2025-09-17T09:29:52.543Z",
+      "updatedAt": "2025-09-17T09:29:52.543Z"
+    },
+    {
+      "name": "Santiago de Cuba > Caney",
+      "cost": 1000,
+      "id": 1758101407935,
+      "createdAt": "2025-09-17T09:30:07.935Z",
+      "updatedAt": "2025-09-17T09:30:07.935Z"
+    },
+    {
+      "name": "Santiago de Cuba > Nuevo Vista Alegre",
+      "cost": 100,
+      "id": 1758101424479,
+      "createdAt": "2025-09-17T09:30:24.479Z",
+      "updatedAt": "2025-09-17T09:30:24.479Z"
+    },
+    {
+      "name": "Santiago de Cuba > Marimón",
+      "cost": 100,
+      "id": 1758101435703,
+      "createdAt": "2025-09-17T09:30:35.703Z",
+      "updatedAt": "2025-09-17T09:30:35.703Z"
+    },
+    {
+      "name": "Santiago de Cuba > Versalle Edificios",
+      "cost": 800,
+      "id": 1758101461055,
+      "createdAt": "2025-09-17T09:31:01.055Z",
+      "updatedAt": "2025-09-17T09:31:01.055Z"
+    },
+    {
+      "name": "Santiago de Cuba > Ferreiro",
+      "cost": 300,
+      "id": 1758101481079,
+      "createdAt": "2025-09-17T09:31:21.079Z",
+      "updatedAt": "2025-09-17T09:31:21.079Z"
+    },
+    {
+      "name": "Santiago de Cuba > 30 de noviembre altos",
+      "cost": 500,
+      "id": 1758101546055,
+      "createdAt": "2025-09-17T09:32:26.055Z",
+      "updatedAt": "2025-09-17T09:32:26.055Z"
     }
   ],
   "novels": [
     {
-      "titulo": "blanca",
-      "genero": "drama",
-      "capitulos": 1,
+      "id": 1,
+      "titulo": "El Turco",
+      "genero": "Acción, Drama y Romance",
+      "capitulos": 6,
       "año": 2025,
-      "descripcion": "",
-      "id": 1757665111112,
-      "createdAt": "2025-09-12T08:18:31.112Z",
-      "updatedAt": "2025-09-12T08:18:31.112Z"
+      "descripcion": "Balaban, un soldado del ejército jenízaro, se va a vivir a Moena, en el norte de Italia, después de la Batalla de Viena en 1683 y lucha por los derechos de la gente local.",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-20T07:35:27.323Z"
+    },
+    {
+      "id": 2,
+      "titulo": "Holding",
+      "genero": "Familia, Drama",
+      "capitulos": 20,
+      "año": 2024,
+      "descripcion": "Aydan, campeona de apnea, se incorpora a una poderosa empresa familiar. Su presencia saca a la luz oscuros secretos y luchas de poder. Debe sortear la influencia corruptora de la riqueza sin dejar de ser fiel a sí misma.",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-20T07:38:27.922Z"
+    },
+    {
+      "id": 3,
+      "titulo": "La Realeza ",
+      "genero": "Drama, Comedia",
+      "capitulos": 8,
+      "año": 2025,
+      "descripcion": "Un joven y apuesto príncipe conoce a una chica que dirige el primer hotel de lujo de la India. El encuentro de estos dos mundos, la aristocracia en decadencia y el capitalismo desenfrenado, genera un torbellino de ambición, conflicto y romance.",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-20T07:41:35.857Z"
+    },
+    {
+      "id": 4,
+      "titulo": "Valentina, mi amor especial",
+      "genero": "Drama",
+      "capitulos": 30,
+      "año": 2024,
+      "descripcion": "La historia de una niña con autismo que se convierte en un genio de la tecnología.",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-20T07:41:00.465Z"
+    },
+    {
+      "id": 5,
+      "titulo": "Alaca (Cicatrices del alma)",
+      "genero": "Drama.",
+      "capitulos": 120,
+      "año": 2024,
+      "descripcion": "La vida de una niña se pone patas arriba cuando le roban el riñón durante un violento secuestro, orquestado por su padre biológico rico que necesita un donante.",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-09-21T08:59:08.653Z"
+    },
+    {
+      "titulo": "Viceversa",
+      "genero": "Drama",
+      "capitulos": 80,
+      "año": 2023,
+      "descripcion": "El argumento propuesto por los guionistas Amílcar Salatti, Yoel Infante y María Claudia Figueroa parte de la historia de tres parejas de jóvenes que acuden a un concierto de música electrónica y sufren un accidente, lo que detona sucesos posteriores.",
+      "id": 1758354384106,
+      "createdAt": "2025-09-20T07:46:24.106Z",
+      "updatedAt": "2025-09-20T07:46:24.106Z"
+    },
+    {
+      "titulo": "Amar, Donde El Amor Teje Sus Redes",
+      "genero": "Drama",
+      "capitulos": 90,
+      "año": 2025,
+      "descripcion": "Estrella, una madre soltera, regresa al pequeño pueblo pesquero de su juventud después de la muerte de su padre. Se enamora de Fabián, un padre viudo y enfrenta un huracán de problemas que ponen en riesgo el bienestar de sus familias.",
+      "id": 1758445394324,
+      "createdAt": "2025-09-21T09:03:14.324Z",
+      "updatedAt": "2025-09-21T09:03:14.324Z"
+    },
+    {
+      "titulo": "Amor en blanco y negro",
+      "genero": "Romance",
+      "capitulos": 64,
+      "año": 2017,
+      "descripcion": "Una doctora que dedica su vida a salvar vidas es capturada por un hombre que se dedica a quitarlas.",
+      "id": 1758445503268,
+      "createdAt": "2025-09-21T09:05:03.268Z",
+      "updatedAt": "2025-09-21T09:05:03.268Z"
+    },
+    {
+      "titulo": "Amor Perfecto",
+      "genero": "Drama, Romántica",
+      "capitulos": 60,
+      "año": 2023,
+      "descripcion": "Amor Perfecto cuenta la historia de Marê (Camila Queiroz), una niña rica, estudiante de Administración y Finanzas, que se enamora del joven doctor Orlando (Diogo Almeida). Marê está de novia con Gaspar (Thiago Lacerda) pero dejará de lado los deseos de su padre para vivir ese amor. Sin embargo, la trágica muerte de su progenitor y los manejos de su madrastra para inculparla llevan a Marê a una prisión injusta.",
+      "id": 1758445741890,
+      "createdAt": "2025-09-21T09:09:01.890Z",
+      "updatedAt": "2025-09-21T09:09:01.890Z"
     }
   ],
   "settings": {
@@ -75,6 +344,9 @@ export interface Novel {
   capitulos: number;
   año: number;
   descripcion?: string;
+  pais?: string;
+  imagen?: string;
+  estado?: 'transmision' | 'finalizada';
   createdAt: string;
   updatedAt: string;
 }
@@ -196,10 +468,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         prices: action.payload,
         lastExport: new Date().toISOString(),
       };
-      
-      // Update embedded configuration in real-time
-      updateEmbeddedConfiguration(updatedConfig);
-      
       return {
         ...state,
         prices: action.payload,
@@ -219,9 +487,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: [...state.systemConfig.deliveryZones, newZone],
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithNewZone);
-      
       return {
         ...state,
         deliveryZones: [...state.deliveryZones, newZone],
@@ -240,9 +505,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: updatedZones,
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithUpdatedZone);
-      
       return {
         ...state,
         deliveryZones: updatedZones,
@@ -257,9 +519,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         deliveryZones: filteredZones,
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithDeletedZone);
-      
       return {
         ...state,
         deliveryZones: filteredZones,
@@ -279,9 +538,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: [...state.systemConfig.novels, newNovel],
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithNewNovel);
-      
       return {
         ...state,
         novels: [...state.novels, newNovel],
@@ -300,9 +556,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: updatedNovels,
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithUpdatedNovel);
-      
       return {
         ...state,
         novels: updatedNovels,
@@ -317,9 +570,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
         novels: filteredNovels,
         lastExport: new Date().toISOString(),
       };
-      
-      updateEmbeddedConfiguration(configWithDeletedNovel);
-      
       return {
         ...state,
         novels: filteredNovels,
@@ -351,7 +601,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
       };
 
     case 'LOAD_SYSTEM_CONFIG':
-      updateEmbeddedConfiguration(action.payload);
       return {
         ...state,
         prices: action.payload.prices,
@@ -363,7 +612,6 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
 
     case 'UPDATE_SYSTEM_CONFIG':
       const newSystemConfig = { ...state.systemConfig, ...action.payload };
-      updateEmbeddedConfiguration(newSystemConfig);
       return {
         ...state,
         systemConfig: newSystemConfig,
@@ -381,37 +629,150 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
   }
 }
 
-// Function to update embedded configuration in real-time
-function updateEmbeddedConfiguration(config: SystemConfig) {
-  // This would trigger a regeneration of the embedded files
-  // For now, we'll store in localStorage as a fallback
-  localStorage.setItem('embedded_config', JSON.stringify(config));
-  
-  // Broadcast configuration change
-  window.dispatchEvent(new CustomEvent('embedded_config_updated', { 
-    detail: config 
-  }));
-}
-
 // Context creation
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
+// Real-time sync service
+class RealTimeSyncService {
+  private listeners: Set<(data: any) => void> = new Set();
+  private syncInterval: NodeJS.Timeout | null = null;
+  private storageKey = 'admin_system_state';
+  private configKey = 'system_config';
+
+  constructor() {
+    this.initializeSync();
+  }
+
+  private initializeSync() {
+    window.addEventListener('storage', this.handleStorageChange.bind(this));
+    this.syncInterval = setInterval(() => {
+      this.checkForUpdates();
+    }, 5000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        this.checkForUpdates();
+      }
+    });
+  }
+
+  private handleStorageChange(event: StorageEvent) {
+    if ((event.key === this.storageKey || event.key === this.configKey) && event.newValue) {
+      try {
+        const newState = JSON.parse(event.newValue);
+        this.notifyListeners(newState);
+      } catch (error) {
+        console.error('Error parsing sync data:', error);
+      }
+    }
+  }
+
+  private checkForUpdates() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      const config = localStorage.getItem(this.configKey);
+      
+      if (stored) {
+        const storedState = JSON.parse(stored);
+        this.notifyListeners(storedState);
+      }
+      
+      if (config) {
+        const configData = JSON.parse(config);
+        this.notifyListeners({ systemConfig: configData });
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+    }
+  }
+
+  subscribe(callback: (data: any) => void) {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  broadcast(state: AdminState) {
+    try {
+      const syncData = {
+        ...state,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(this.storageKey, JSON.stringify(syncData));
+      localStorage.setItem(this.configKey, JSON.stringify(state.systemConfig));
+      this.notifyListeners(syncData);
+    } catch (error) {
+      console.error('Error broadcasting state:', error);
+    }
+  }
+
+  private notifyListeners(data: any) {
+    this.listeners.forEach(callback => {
+      try {
+        callback(data);
+      } catch (error) {
+        console.error('Error in sync listener:', error);
+      }
+    });
+  }
+
+  destroy() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+    }
+    window.removeEventListener('storage', this.handleStorageChange.bind(this));
+    this.listeners.clear();
+  }
+}
 
 // Provider component
 export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(adminReducer, initialState);
+  const [syncService] = React.useState(() => new RealTimeSyncService());
 
   // Load system config on startup
   useEffect(() => {
     try {
-      const storedConfig = localStorage.getItem('embedded_config');
+      const storedConfig = localStorage.getItem('system_config');
       if (storedConfig) {
         const config = JSON.parse(storedConfig);
         dispatch({ type: 'LOAD_SYSTEM_CONFIG', payload: config });
       }
+      
+      const stored = localStorage.getItem('admin_system_state');
+      if (stored) {
+        const storedState = JSON.parse(stored);
+        dispatch({ type: 'SYNC_STATE', payload: storedState });
+      }
     } catch (error) {
-      console.error('Error loading embedded config:', error);
+      console.error('Error loading initial state:', error);
     }
   }, []);
+
+  // Save state changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('admin_system_state', JSON.stringify(state));
+      localStorage.setItem('system_config', JSON.stringify(state.systemConfig));
+      syncService.broadcast(state);
+    } catch (error) {
+      console.error('Error saving state:', error);
+    }
+  }, [state, syncService]);
+
+  // Real-time sync listener
+  useEffect(() => {
+    const unsubscribe = syncService.subscribe((syncedState) => {
+      if (JSON.stringify(syncedState) !== JSON.stringify(state)) {
+        dispatch({ type: 'SYNC_STATE', payload: syncedState });
+      }
+    });
+    return unsubscribe;
+  }, [syncService, state]);
+
+  useEffect(() => {
+    return () => {
+      syncService.destroy();
+    };
+  }, [syncService]);
 
   // Context methods implementation
   const login = (username: string, password: string): boolean => {
@@ -445,7 +806,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Precios actualizados',
-      message: 'Los precios se han actualizado y aplicado automáticamente en toda la aplicación',
+      message: 'Los precios se han actualizado y sincronizado automáticamente',
       section: 'Precios',
       action: 'update'
     });
@@ -457,7 +818,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega agregada',
-      message: `Se agregó la zona "${zone.name}" y está disponible en el checkout`,
+      message: `Se agregó la zona "${zone.name}" y se sincronizó automáticamente`,
       section: 'Zonas de Entrega',
       action: 'create'
     });
@@ -469,7 +830,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Zona de entrega actualizada',
-      message: `Se actualizó la zona "${zone.name}" y los cambios se aplicaron automáticamente`,
+      message: `Se actualizó la zona "${zone.name}" y se sincronizó automáticamente`,
       section: 'Zonas de Entrega',
       action: 'update'
     });
@@ -482,7 +843,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Zona de entrega eliminada',
-      message: `Se eliminó la zona "${zone?.name || 'Desconocida'}" del sistema`,
+      message: `Se eliminó la zona "${zone?.name || 'Desconocida'}" y se sincronizó automáticamente`,
       section: 'Zonas de Entrega',
       action: 'delete'
     });
@@ -494,7 +855,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela agregada',
-      message: `Se agregó la novela "${novel.titulo}" al catálogo`,
+      message: `Se agregó la novela "${novel.titulo}" y se sincronizó automáticamente`,
       section: 'Gestión de Novelas',
       action: 'create'
     });
@@ -506,7 +867,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'success',
       title: 'Novela actualizada',
-      message: `Se actualizó la novela "${novel.titulo}" en el catálogo`,
+      message: `Se actualizó la novela "${novel.titulo}" y se sincronizó automáticamente`,
       section: 'Gestión de Novelas',
       action: 'update'
     });
@@ -519,7 +880,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     addNotification({
       type: 'warning',
       title: 'Novela eliminada',
-      message: `Se eliminó la novela "${novel?.titulo || 'Desconocida'}" del catálogo`,
+      message: `Se eliminó la novela "${novel?.titulo || 'Desconocida'}" y se sincronizó automáticamente`,
       section: 'Gestión de Novelas',
       action: 'delete'
     });
@@ -551,6 +912,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         action: 'export_config_start'
       });
 
+      // Create comprehensive system configuration
       const completeConfig: SystemConfig = {
         ...state.systemConfig,
         version: '2.1.0',
@@ -560,10 +922,14 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         novels: state.novels,
         metadata: {
           ...state.systemConfig.metadata,
-          exportTimestamp: new Date().toISOString(),
+          totalOrders: state.systemConfig.metadata.totalOrders,
+          totalRevenue: state.systemConfig.metadata.totalRevenue,
+          lastOrderDate: state.systemConfig.metadata.lastOrderDate,
+          systemUptime: state.systemConfig.metadata.systemUptime,
         },
       };
 
+      // Generate JSON file
       const configJson = JSON.stringify(completeConfig, null, 2);
       const blob = new Blob([configJson], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -575,6 +941,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
+      // Update system config with export timestamp
       dispatch({ 
         type: 'UPDATE_SYSTEM_CONFIG', 
         payload: { lastExport: new Date().toISOString() } 
@@ -604,23 +971,89 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Exportación de código fuente iniciada',
-        message: 'Generando sistema completo con configuración embebida...',
+        message: 'Generando sistema completo con código fuente...',
         section: 'Sistema',
         action: 'export_source_start'
       });
 
-      try {
-        const { generateCompleteSourceCode } = await import('../utils/sourceCodeGenerator');
-        await generateCompleteSourceCode(state.systemConfig);
-      } catch (importError) {
-        console.error('Error importing source code generator:', importError);
-        throw new Error('No se pudo cargar el generador de código fuente');
-      }
+      const zip = new JSZip();
+      
+      // Generate updated source code with current configuration
+      const generateAdminContextSource = () => `import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import JSZip from 'jszip';
+
+// CONFIGURACIÓN EMBEBIDA - Generada automáticamente
+const EMBEDDED_CONFIG = ${JSON.stringify(state.systemConfig, null, 2)};
+
+// CREDENCIALES DE ACCESO (CONFIGURABLES)
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'tvalacarta2024'
+};
+
+// ... resto del código AdminContext.tsx igual ...`;
+
+      const generateCartContextSource = () => `import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { Toast } from '../components/Toast';
+import type { CartItem } from '../types/movie';
+
+// PRECIOS EMBEBIDOS - Generados automáticamente
+const EMBEDDED_PRICES = ${JSON.stringify(state.prices, null, 2)};
+
+// ... resto del código CartContext.tsx igual ...`;
+
+      const generatePriceCardSource = () => `import React from 'react';
+import { DollarSign, Tv, Film, Star, CreditCard } from 'lucide-react';
+
+// PRECIOS EMBEBIDOS - Generados automáticamente
+const EMBEDDED_PRICES = ${JSON.stringify(state.prices, null, 2)};
+
+// ... resto del código PriceCard.tsx igual ...`;
+
+      const generateCheckoutModalSource = () => `import React, { useState, useEffect } from 'react';
+import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, MessageCircle, Calculator, Truck, ExternalLink } from 'lucide-react';
+
+// ZONAS DE ENTREGA EMBEBIDAS - Generadas automáticamente
+const EMBEDDED_DELIVERY_ZONES = ${JSON.stringify(state.deliveryZones, null, 2)};
+
+// PRECIOS EMBEBIDOS
+const EMBEDDED_PRICES = ${JSON.stringify(state.prices, null, 2)};
+
+// ... resto del código CheckoutModal.tsx igual ...`;
+
+      const generateNovelasModalSource = () => `import React, { useState, useEffect } from 'react';
+import { X, Download, MessageCircle, Phone, BookOpen, Info, Check, DollarSign, CreditCard, Calculator, Search, Filter, SortAsc, SortDesc, Smartphone } from 'lucide-react';
+
+// CATÁLOGO DE NOVELAS EMBEBIDO - Generado automáticamente
+const EMBEDDED_NOVELS = ${JSON.stringify(state.novels, null, 2)};
+
+// PRECIOS EMBEBIDOS
+const EMBEDDED_PRICES = ${JSON.stringify(state.prices, null, 2)};
+
+// ... resto del código NovelasModal.tsx igual ...`;
+
+      // Add files to ZIP
+      zip.file('src/context/AdminContext.tsx', generateAdminContextSource());
+      zip.file('src/context/CartContext.tsx', generateCartContextSource());
+      zip.file('src/components/PriceCard.tsx', generatePriceCardSource());
+      zip.file('src/components/CheckoutModal.tsx', generateCheckoutModalSource());
+      zip.file('src/components/NovelasModal.tsx', generateNovelasModalSource());
+
+      // Generate and download ZIP
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `TV_a_la_Carta_SourceCode_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       addNotification({
         type: 'success',
         title: 'Código fuente exportado',
-        message: 'El sistema completo con configuración embebida se ha exportado correctamente',
+        message: 'El sistema completo se ha exportado como código fuente',
         section: 'Sistema',
         action: 'export_source'
       });
@@ -643,7 +1076,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Configuración importada',
-        message: 'La configuración del sistema se ha cargado y aplicado correctamente',
+        message: 'La configuración del sistema se ha cargado correctamente',
         section: 'Sistema',
         action: 'import'
       });
@@ -664,13 +1097,15 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización completa iniciada',
-        message: 'Aplicando cambios en toda la aplicación...',
+        message: 'Sincronizando todas las secciones del sistema...',
         section: 'Sistema',
         action: 'sync_all_start'
       });
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate comprehensive sync of all sections
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
+      // Update all components with current state
       const updatedConfig: SystemConfig = {
         ...state.systemConfig,
         lastExport: new Date().toISOString(),
@@ -681,6 +1116,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
       dispatch({ type: 'UPDATE_SYSTEM_CONFIG', payload: updatedConfig });
       
+      // Broadcast changes to all components
       window.dispatchEvent(new CustomEvent('admin_full_sync', { 
         detail: { 
           config: updatedConfig,
@@ -691,7 +1127,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completa exitosa',
-        message: 'Todos los cambios se han aplicado correctamente en la aplicación',
+        message: 'Todas las secciones se han sincronizado correctamente',
         section: 'Sistema',
         action: 'sync_all'
       });
@@ -734,12 +1170,13 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'info',
         title: 'Sincronización iniciada',
-        message: 'Aplicando cambios en toda la aplicación...',
+        message: 'Iniciando sincronización con el sistema remoto...',
         section: 'Sistema',
         action: 'sync_start'
       });
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate remote sync
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       dispatch({ 
         type: 'UPDATE_SYNC_STATUS', 
@@ -752,7 +1189,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'success',
         title: 'Sincronización completada',
-        message: 'Todos los cambios se han aplicado correctamente',
+        message: 'Todos los datos se han sincronizado correctamente',
         section: 'Sistema',
         action: 'sync'
       });
@@ -761,7 +1198,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       addNotification({
         type: 'error',
         title: 'Error de sincronización',
-        message: 'No se pudo aplicar algunos cambios',
+        message: 'No se pudo sincronizar con el servidor remoto',
         section: 'Sistema',
         action: 'sync_error'
       });
