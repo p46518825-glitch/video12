@@ -13,7 +13,7 @@ import type { Movie, TVShow } from '../types/movie';
 type TrendingTimeWindow = 'day' | 'week';
 
 export function Home() {
-  const { state: adminState } = useAdmin();
+  const { state: adminState, addNotification } = useAdmin();
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [popularTVShows, setPopularTVShows] = useState<TVShow[]>([]);
   const [popularAnime, setPopularAnime] = useState<TVShow[]>([]);
@@ -27,8 +27,8 @@ export function Home() {
   const [showNovelasModal, setShowNovelasModal] = useState(false);
 
   const timeWindowLabels = {
-    day: 'Hoy',
-    week: 'Esta Semana'
+    day: 'Hoy + Novelas en Transmisión',
+    week: 'Esta Semana + Novelas Finalizadas'
   };
 
   const fetchTrendingContent = async (timeWindow: TrendingTimeWindow) => {
@@ -47,12 +47,12 @@ export function Home() {
     }
   };
   
-  const getNovelTrendingContent = (timeWindow: TrendingTimeWindow) => {
+  const getNovelTrendingContent = (timeWindow: TrendingTimeWindow): any[] => {
     const novels = adminState.novels || [];
     
     if (timeWindow === 'day') {
       // Show novels currently airing
-      return novels.filter(novel => novel.estado === 'transmision').slice(0, 6);
+      return novels.filter(novel => novel.estado === 'transmision').slice(0, 8);
     } else {
       // Show recently finished novels
       return novels.filter(novel => novel.estado === 'finalizada').slice(0, 6);
@@ -246,7 +246,7 @@ export function Home() {
           </div>
           
           {/* Movies and TV Shows */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
             {trendingContent.map((item) => {
               const itemType = 'title' in item ? 'movie' : 'tv';
               return (
@@ -258,11 +258,11 @@ export function Home() {
           {/* Novels Trending Section */}
           {novelTrendingContent.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <Library className="mr-2 h-5 w-5 text-pink-500" />
-                Novelas {trendingTimeWindow === 'day' ? 'En Transmisión' : 'Finalizadas'}
+                📺 Novelas {trendingTimeWindow === 'day' ? 'En Transmisión' : 'Finalizadas Recientemente'}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                 {novelTrendingContent.map((novel) => (
                   <div
                     key={`novel-trending-${novel.id}`}
@@ -270,7 +270,7 @@ export function Home() {
                   >
                     <div className="relative">
                       <img
-                        src={novel.imagen || 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop'}
+                        src={novel.imagen || `https://images.unsplash.com/photo-${novel.genero.includes('Drama') ? '1507003211169-0a1dd7228f2d' : novel.genero.includes('Romance') ? '1518199266791-5375a83190b7' : novel.genero.includes('Acción') ? '1489599843253-c76cc4bcb8cf' : novel.genero.includes('Comedia') ? '1513475382585-d06e58bcb0e0' : '1511895426328-dc8714191300'}?w=300&h=400&fit=crop`}
                         alt={novel.titulo}
                         className="w-full h-48 object-cover"
                         onError={(e) => {
@@ -279,7 +279,7 @@ export function Home() {
                         }}
                       />
                       <div className="absolute top-2 left-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold text-white ${
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
                           novel.estado === 'transmision' ? 'bg-red-500' : 'bg-green-500'
                         }`}>
                           {novel.estado === 'transmision' ? '📡 LIVE' : '✅ COMPLETA'}
@@ -287,7 +287,7 @@ export function Home() {
                       </div>
                       <div className="absolute top-2 right-2">
                         <span className="bg-black/60 text-white px-2 py-1 rounded-lg text-xs font-medium">
-                          {novel.pais && (
+                          {novel.pais ? (
                             <>
                               {novel.pais === 'Turquía' && '🇹🇷'}
                               {novel.pais === 'México' && '🇲🇽'}
@@ -300,17 +300,30 @@ export function Home() {
                               {novel.pais === 'India' && '🇮🇳'}
                               {!['Turquía', 'México', 'Brasil', 'Colombia', 'Argentina', 'España', 'Estados Unidos', 'Corea del Sur', 'India'].includes(novel.pais) && '🌍'}
                             </>
-                          )}
+                          ) : '🌍'}
                         </span>
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2">{novel.titulo}</h4>
-                      <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
-                        <span>{novel.genero}</span>
-                        <span>{novel.capitulos} cap.</span>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                        <div className="text-white text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-medium">
+                              {novel.año}
+                            </span>
+                            <span className="bg-purple-500/80 px-2 py-1 rounded-full text-xs font-bold">
+                              {novel.capitulos} cap.
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-center">
+                    </div>
+                    <div className="p-3 sm:p-4">
+                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-2 hover:text-purple-600 transition-colors cursor-pointer">
+                        {novel.titulo}
+                      </h4>
+                      <div className="flex flex-col space-y-2 text-xs text-gray-600 mb-3">
+                        <span className="bg-gray-100 px-2 py-1 rounded-full text-center font-medium">{novel.genero}</span>
+                      </div>
+                      <div className="text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-2 border border-purple-200">
                         <span className="text-sm font-bold text-purple-600">
                           ${(novel.capitulos * 5).toLocaleString()} CUP
                         </span>
@@ -319,7 +332,7 @@ export function Home() {
                   </div>
                 ))}
               </div>
-              <div className="text-center mt-6">
+              <div className="text-center mt-8">
                 <button
                   onClick={() => setShowNovelasModal(true)}
                   className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center mx-auto"
@@ -327,6 +340,16 @@ export function Home() {
                   <Library className="mr-2 h-5 w-5" />
                   Ver Catálogo Completo
                 </button>
+                <p className="text-sm text-gray-600 mt-3 max-w-md mx-auto">
+                  {trendingTimeWindow === 'day' 
+                    ? `${novelTrendingContent.length} novelas actualmente en transmisión` 
+                    : `${novelTrendingContent.length} novelas finalizadas recientemente`
+                  }
+                </p>
+                <div className="mt-4 text-xs text-gray-500 bg-gray-50 rounded-lg p-3 max-w-lg mx-auto">
+                  <span className="font-medium">💡 Tip:</span> Las novelas se encargan completas. 
+                  Precio: ${adminState.prices?.novelPricePerChapter || 5} CUP por capítulo.
+                </div>
               </div>
             </div>
           )}
