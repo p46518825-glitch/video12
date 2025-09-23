@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, TrendingUp, Star, Monitor, Filter, Calendar, Clock, Flame, Library, Play, Clapperboard, Sparkles } from 'lucide-react';
 import { tmdbService } from '../services/tmdb';
+import { useCart } from '../context/CartContext';
 import { useAdmin } from '../context/AdminContext';
 import { MovieCard } from '../components/MovieCard';
 import { HeroCarousel } from '../components/HeroCarousel';
@@ -14,6 +15,7 @@ type TrendingTimeWindow = 'day' | 'week';
 
 export function Home() {
   const { state: adminState, addNotification } = useAdmin();
+  const { getCurrentPrices } = useCart();
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [popularTVShows, setPopularTVShows] = useState<TVShow[]>([]);
   const [popularAnime, setPopularAnime] = useState<TVShow[]>([]);
@@ -26,6 +28,7 @@ export function Home() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [showNovelasModal, setShowNovelasModal] = useState(false);
 
+  const currentPrices = getCurrentPrices();
   const timeWindowLabels = {
     day: 'Hoy + Novelas en Transmisión',
     week: 'Esta Semana + Novelas Finalizadas'
@@ -52,13 +55,34 @@ export function Home() {
     
     if (timeWindow === 'day') {
       // Show novels currently airing
-      return novels.filter(novel => novel.estado === 'transmision').slice(0, 8);
+      return novels.filter(novel => novel.estado === 'transmision').slice(0, 12);
     } else {
       // Show recently finished novels
-      return novels.filter(novel => novel.estado === 'finalizada').slice(0, 6);
+      return novels.filter(novel => novel.estado === 'finalizada').slice(0, 10);
     }
   };
 
+  const getCountryFlag = (country: string) => {
+    const flags: { [key: string]: string } = {
+      'Turquía': '🇹🇷',
+      'México': '🇲🇽',
+      'Brasil': '🇧🇷',
+      'Colombia': '🇨🇴',
+      'Argentina': '🇦🇷',
+      'España': '🇪🇸',
+      'Estados Unidos': '🇺🇸',
+      'Corea del Sur': '🇰🇷',
+      'India': '🇮🇳',
+      'Reino Unido': '🇬🇧',
+      'Francia': '🇫🇷',
+      'Italia': '🇮🇹',
+      'Alemania': '🇩🇪',
+      'Japón': '🇯🇵',
+      'China': '🇨🇳',
+      'Rusia': '🇷🇺'
+    };
+    return flags[country] || '🌍';
+  };
   const fetchAllContent = async () => {
     try {
       setLoading(true);
@@ -262,17 +286,27 @@ export function Home() {
                 <Library className="mr-2 h-5 w-5 text-pink-500" />
                 📺 Novelas {trendingTimeWindow === 'day' ? 'En Transmisión' : 'Finalizadas Recientemente'}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {novelTrendingContent.map((novel) => (
-                  <div
+                  <Link
+                    to={`/novel/${novel.id}`}
                     key={`novel-trending-${novel.id}`}
-                    className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:scale-105 border border-gray-200"
+                    className="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 transform hover:scale-105 border border-gray-200"
                   >
                     <div className="relative">
                       <img
-                        src={novel.imagen || `https://images.unsplash.com/photo-${novel.genero.includes('Drama') ? '1507003211169-0a1dd7228f2d' : novel.genero.includes('Romance') ? '1518199266791-5375a83190b7' : novel.genero.includes('Acción') ? '1489599843253-c76cc4bcb8cf' : novel.genero.includes('Comedia') ? '1513475382585-d06e58bcb0e0' : '1511895426328-dc8714191300'}?w=300&h=400&fit=crop`}
+                        src={novel.imagen || (() => {
+                          const genreImages = {
+                            'Drama': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+                            'Romance': 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300&h=400&fit=crop',
+                            'Acción': 'https://images.unsplash.com/photo-1489599843253-c76cc4bcb8cf?w=300&h=400&fit=crop',
+                            'Comedia': 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=400&fit=crop',
+                            'Familia': 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300&h=400&fit=crop'
+                          };
+                          return genreImages[novel.genero as keyof typeof genreImages] || 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop';
+                        })()}
                         alt={novel.titulo}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop';
@@ -287,20 +321,27 @@ export function Home() {
                       </div>
                       <div className="absolute top-2 right-2">
                         <span className="bg-black/60 text-white px-2 py-1 rounded-lg text-xs font-medium">
-                          {novel.pais ? (
-                            <>
-                              {novel.pais === 'Turquía' && '🇹🇷'}
-                              {novel.pais === 'México' && '🇲🇽'}
-                              {novel.pais === 'Brasil' && '🇧🇷'}
-                              {novel.pais === 'Colombia' && '🇨🇴'}
-                              {novel.pais === 'Argentina' && '🇦🇷'}
-                              {novel.pais === 'España' && '🇪🇸'}
-                              {novel.pais === 'Estados Unidos' && '🇺🇸'}
-                              {novel.pais === 'Corea del Sur' && '🇰🇷'}
-                              {novel.pais === 'India' && '🇮🇳'}
-                              {!['Turquía', 'México', 'Brasil', 'Colombia', 'Argentina', 'España', 'Estados Unidos', 'Corea del Sur', 'India'].includes(novel.pais) && '🌍'}
-                            </>
-                          ) : '🌍'}
+                          {(() => {
+                            const flags: { [key: string]: string } = {
+                              'Turquía': '🇹🇷',
+                              'México': '🇲🇽',
+                              'Brasil': '🇧🇷',
+                              'Colombia': '🇨🇴',
+                              'Argentina': '🇦🇷',
+                              'España': '🇪🇸',
+                              'Estados Unidos': '🇺🇸',
+                              'Corea del Sur': '🇰🇷',
+                              'India': '🇮🇳',
+                              'Reino Unido': '🇬🇧',
+                              'Francia': '🇫🇷',
+                              'Italia': '🇮🇹',
+                              'Alemania': '🇩🇪',
+                              'Japón': '🇯🇵',
+                              'China': '🇨🇳',
+                              'Rusia': '🇷🇺'
+                            };
+                            return flags[novel.pais || 'No especificado'] || '🌍';
+                          })()}
                         </span>
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
@@ -317,19 +358,25 @@ export function Home() {
                       </div>
                     </div>
                     <div className="p-3 sm:p-4">
-                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-2 hover:text-purple-600 transition-colors cursor-pointer">
+                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-2 group-hover:text-purple-600 transition-colors">
                         {novel.titulo}
                       </h4>
                       <div className="flex flex-col space-y-2 text-xs text-gray-600 mb-3">
                         <span className="bg-gray-100 px-2 py-1 rounded-full text-center font-medium">{novel.genero}</span>
+                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-center font-medium">
+                          {getCountryFlag(novel.pais || 'No especificado')} {novel.pais || 'No especificado'}
+                        </span>
                       </div>
                       <div className="text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-2 border border-purple-200">
                         <span className="text-sm font-bold text-purple-600">
-                          ${(novel.capitulos * 5).toLocaleString()} CUP
+                          ${(novel.capitulos * currentPrices.novelPricePerChapter).toLocaleString()} CUP
                         </span>
+                        <div className="text-xs text-gray-500 mt-1">
+                          ${currentPrices.novelPricePerChapter} CUP × {novel.capitulos} cap.
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               <div className="text-center mt-8">
@@ -348,7 +395,7 @@ export function Home() {
                 </p>
                 <div className="mt-4 text-xs text-gray-500 bg-gray-50 rounded-lg p-3 max-w-lg mx-auto">
                   <span className="font-medium">💡 Tip:</span> Las novelas se encargan completas. 
-                  Precio: ${adminState.prices?.novelPricePerChapter || 5} CUP por capítulo.
+                  Precio: ${currentPrices.novelPricePerChapter} CUP por capítulo.
                 </div>
               </div>
             </div>

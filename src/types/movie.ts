@@ -155,6 +155,7 @@ export interface NovelCartItem {
   paymentType: 'cash' | 'transfer';
   pricePerChapter: number;
   totalPrice: number;
+  poster_path?: string | null; // For compatibility with search
 }
 
 export type AllCartItems = CartItem | NovelCartItem;
