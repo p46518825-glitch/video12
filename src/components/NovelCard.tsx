@@ -72,6 +72,9 @@ export function NovelCard({ novel }: NovelCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    // Prevent multiple rapid clicks
+    if (isAddingToCart) return;
+    
     setIsAddingToCart(true);
     setTimeout(() => setIsAddingToCart(false), 1000);
 
@@ -99,8 +102,11 @@ export function NovelCard({ novel }: NovelCardProps) {
       setToastMessage(`"${novel.titulo}" agregada al carrito`);
     }
     
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    // Only show toast if not already showing
+    if (!showToast) {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
   };
 
   const basePrice = novel.capitulos * currentPrices.novelPricePerChapter;
@@ -267,12 +273,14 @@ export function NovelCard({ novel }: NovelCardProps) {
         )}
       </div>
       
-      <Toast
-        message={toastMessage}
-        type={inCart ? "success" : "success"}
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-      />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={inCart ? "success" : "success"}
+          isVisible={showToast}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </>
   );
 }
