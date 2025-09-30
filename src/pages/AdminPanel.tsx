@@ -1,43 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Settings, 
-  DollarSign, 
-  MapPin, 
-  BookOpen, 
-  Bell, 
-  Download, 
-  Upload, 
-  Trash2, 
-  Edit, 
-  Plus, 
-  Save, 
-  X, 
-  Eye, 
-  EyeOff, 
-  LogOut, 
-  Home,
-  Monitor,
-  Smartphone,
-  Globe,
-  Calendar,
-  Image,
-  Camera,
-  Check,
-  AlertCircle,
-  Info,
-  RefreshCw,
-  Database,
-  Sync,
-  Activity,
-  TrendingUp,
-  Users,
-  ShoppingCart,
-  Clock,
-  Zap,
-  Heart,
-  Star
-} from 'lucide-react';
+import { Settings, DollarSign, MapPin, BookOpen, Bell, Download, Upload, Trash2, CreditCard as Edit, Plus, Save, X, Eye, EyeOff, LogOut, Home, Monitor, Smartphone, Globe, Calendar, Image, Camera, Check, AlertCircle, Info, RefreshCw, Database, FolderSync as Sync, Activity, TrendingUp, Users, ShoppingCart, Clock, Zap, Heart, Star } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 
 interface NovelForm {
