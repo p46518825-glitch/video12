@@ -94,9 +94,9 @@ export function AdminPanel() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [state.isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(loginForm.username, loginForm.password);
+    const success = await login(loginForm.username, loginForm.password);
     if (!success) {
       addNotification('Credenciales incorrectas', 'error');
     }
@@ -200,27 +200,27 @@ export function AdminPanel() {
     addNotification('Precios actualizados correctamente', 'success');
   };
 
-  const handleExport = () => {
-    const config = exportSystemConfig();
+  const handleExport = async () => {
+    const config = await exportSystemConfig();
     const blob = new Blob([config], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `tv-a-la-carta-config-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `tv-a-la-carta-config-v2-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    addNotification('Configuración exportada correctamente', 'success');
+    addNotification('Configuración v2 exportada correctamente', 'success');
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     if (!importData.trim()) {
       addNotification('Por favor pega la configuración a importar', 'error');
       return;
     }
 
-    const success = importSystemConfig(importData);
+    const success = await importSystemConfig(importData);
     if (success) {
       setImportData('');
       setShowImportModal(false);
@@ -272,7 +272,7 @@ export function AdminPanel() {
                 value={loginForm.username}
                 onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="admin"
+                autoComplete="username"
                 required
               />
             </div>
@@ -287,7 +287,7 @@ export function AdminPanel() {
                   value={loginForm.password}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
-                  placeholder="admin123"
+                  autoComplete="current-password"
                   required
                 />
                 <button
@@ -983,7 +983,7 @@ export function AdminPanel() {
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors"
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Exportar Configuración
+                      Exportar Configuración v2
                     </button>
                     
                     <button
