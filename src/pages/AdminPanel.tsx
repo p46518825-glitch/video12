@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, DollarSign, MapPin, BookOpen, Bell, Download, Upload, Trash2, CreditCard as Edit, Plus, Save, X, Eye, EyeOff, LogOut, Home, Monitor, Smartphone, Globe, Calendar, Image, Camera, Check, AlertCircle, Info, RefreshCw, Database, FolderSync as Sync, Activity, TrendingUp, Users, ShoppingCart, Clock, Zap, Heart, Star } from 'lucide-react';
+import { Settings, DollarSign, MapPin, BookOpen, Bell, Download, Upload, Trash2, CreditCard as Edit, Plus, Save, X, Eye, EyeOff, LogOut, Home, Monitor, Smartphone, Globe, Calendar, Image, Camera, Check, AlertCircle, Info, RefreshCw, Database, FolderSync as Sync, Activity, TrendingUp, Users, ShoppingCart, Clock, Zap, Heart, Star, PackageOpen } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
+import { generateCompleteSourceCode } from '../utils/sourceCodeGenerator';
 
 interface NovelForm {
   titulo: string;
@@ -41,7 +42,6 @@ export function AdminPanel() {
   } = useAdmin();
 
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'novels' | 'zones' | 'prices' | 'notifications' | 'system'>('novels');
   const [novelForm, setNovelForm] = useState<NovelForm>({
     titulo: '',
@@ -94,11 +94,17 @@ export function AdminPanel() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [state.isAuthenticated]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(loginForm.username, loginForm.password);
+    const success = login(loginForm.username, loginForm.password);
     if (!success) {
-      addNotification('Credenciales incorrectas', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Error de autenticación',
+        message: 'Credenciales incorrectas',
+        section: 'Autenticación',
+        action: 'login_error'
+      });
     }
   };
 
@@ -106,7 +112,13 @@ export function AdminPanel() {
     e.preventDefault();
     
     if (!novelForm.titulo.trim() || !novelForm.genero || !novelForm.pais || novelForm.capitulos <= 0) {
-      addNotification('Por favor completa todos los campos requeridos', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Campos requeridos',
+        message: 'Por favor completa todos los campos requeridos',
+        section: 'Gestión de Novelas',
+        action: 'validation_error'
+      });
       return;
     }
 
@@ -132,7 +144,13 @@ export function AdminPanel() {
     e.preventDefault();
     
     if (!zoneForm.name.trim() || zoneForm.cost < 0) {
-      addNotification('Por favor completa todos los campos correctamente', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Campos incorrectos',
+        message: 'Por favor completa todos los campos correctamente',
+        section: 'Zonas de Entrega',
+        action: 'validation_error'
+      });
       return;
     }
 
@@ -197,33 +215,86 @@ export function AdminPanel() {
 
   const handlePricesUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    addNotification('Precios actualizados correctamente', 'success');
+    addNotification({
+      type: 'success',
+      title: 'Precios actualizados',
+      message: 'Precios actualizados correctamente',
+      section: 'Configuración de Precios',
+      action: 'update'
+    });
   };
 
-  const handleExport = async () => {
-    const config = await exportSystemConfig();
-    const blob = new Blob([config], { type: 'application/json' });
+  const handleExport = () => {
+    const configJson = exportSystemConfig();
+    if (!configJson) return;
+    
+    const blob = new Blob([configJson], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `tv-a-la-carta-config-v2-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `tv-a-la-carta-config-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    addNotification('Configuración v2 exportada correctamente', 'success');
   };
 
-  const handleImport = async () => {
+  const handleImport = () => {
     if (!importData.trim()) {
-      addNotification('Por favor pega la configuración a importar', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Datos faltantes',
+        message: 'Por favor pega la configuración a importar',
+        section: 'Sistema',
+        action: 'import_validation_error'
+      });
       return;
     }
 
-    const success = await importSystemConfig(importData);
+    const success = importSystemConfig(importData);
     if (success) {
       setImportData('');
       setShowImportModal(false);
+    }
+  };
+
+  const handleFullBackupExport = async () => {
+    try {
+      addNotification({
+        type: 'info',
+        title: 'Backup en progreso',
+        message: 'Generando backup completo del sistema...',
+        section: 'Sistema',
+        action: 'backup_start'
+      });
+
+      const fullSystemConfig = {
+        version: state.systemConfig.version,
+        prices: state.prices,
+        deliveryZones: state.deliveryZones,
+        novels: state.novels,
+        settings: state.systemConfig,
+        syncStatus: state.syncStatus,
+        exportDate: new Date().toISOString(),
+      };
+
+      await generateCompleteSourceCode(fullSystemConfig);
+      addNotification({
+        type: 'success',
+        title: 'Backup completado',
+        message: 'Backup completo generado exitosamente',
+        section: 'Sistema',
+        action: 'backup_success'
+      });
+    } catch (error) {
+      console.error('Error al generar backup completo:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error en backup',
+        message: 'Error al generar el backup completo',
+        section: 'Sistema',
+        action: 'backup_error'
+      });
     }
   };
 
@@ -272,32 +343,23 @@ export function AdminPanel() {
                 value={loginForm.username}
                 onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoComplete="username"
+                autoComplete="off"
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Contraseña
               </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
+              <input
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoComplete="off"
+                required
+              />
             </div>
             
             <button
@@ -983,9 +1045,9 @@ export function AdminPanel() {
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors"
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Exportar Configuración v2
+                      Exportar Configuración
                     </button>
-                    
+
                     <button
                       onClick={() => setShowImportModal(true)}
                       className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors"
@@ -993,6 +1055,21 @@ export function AdminPanel() {
                       <Upload className="h-4 w-4 mr-2" />
                       Importar Configuración
                     </button>
+
+                    <button
+                      onClick={handleFullBackupExport}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-lg"
+                    >
+                      <PackageOpen className="h-4 w-4 mr-2" />
+                      Exportar Backup Full
+                    </button>
+
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+                      <p className="text-xs text-amber-800">
+                        <Info className="h-3 w-3 inline mr-1" />
+                        El Backup Full incluye todos los archivos del sistema con la configuración aplicada
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
