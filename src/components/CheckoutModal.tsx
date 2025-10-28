@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, Send, Calculator, Truck, ExternalLink } from 'lucide-react';
+import { X, MapPin, User, Phone, Home, CreditCard, DollarSign, Send, Calculator, Truck, ExternalLink, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export interface CustomerInfo {
@@ -64,6 +64,7 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
   const [showLocationMap, setShowLocationMap] = useState(false);
   const [errors, setErrors] = useState<Partial<CustomerInfo & { zone: string }>>({});
   const [deliveryZones, setDeliveryZones] = useState<any[]>([]);
+  const [zoneSearchQuery, setZoneSearchQuery] = useState('');
 
   // Load delivery zones from admin config
   useEffect(() => {
@@ -115,6 +116,10 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
   };
 
   const allDeliveryOptions = [pickupOption, ...deliveryZones];
+
+  const filteredDeliveryZones = deliveryZones.filter(zone =>
+    zone.name.toLowerCase().includes(zoneSearchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (selectedZone === 'pickup') {
@@ -361,16 +366,37 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
                 {deliveryZones.length > 0 && (
                   <div className="border-2 border-gray-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4 border-b border-gray-300">
-                      <h4 className="font-bold text-blue-900 flex items-center text-base sm:text-lg">
+                      <h4 className="font-bold text-blue-900 flex items-center text-base sm:text-lg mb-3">
                         <div className="bg-blue-500 p-2 rounded-lg mr-3 shadow-sm">
                           <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                         </div>
                         Entrega a Domicilio
                       </h4>
-                      <p className="text-sm text-blue-700 ml-10 sm:ml-12 mt-1">Selecciona tu zona de entrega</p>
+                      <p className="text-sm text-blue-700 ml-10 sm:ml-12 mb-3">Selecciona tu zona de entrega</p>
+
+                      {/* Search Filter */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type="text"
+                          value={zoneSearchQuery}
+                          onChange={(e) => setZoneSearchQuery(e.target.value)}
+                          placeholder="Buscar zona..."
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        {zoneSearchQuery && (
+                          <button
+                            onClick={() => setZoneSearchQuery('')}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="max-h-64 sm:max-h-80 overflow-y-auto bg-white">
-                      {deliveryZones.map((zone) => (
+                      {filteredDeliveryZones.length > 0 ? (
+                        filteredDeliveryZones.map((zone) => (
                         <label
                           key={zone.id}
                           className={`group flex flex-col p-3 sm:p-4 border-b border-gray-100 last:border-b-0 cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 space-y-3 ${
@@ -419,7 +445,23 @@ export function CheckoutModal({ isOpen, onClose, onCheckout, items, total }: Che
                             <p className="text-xs text-gray-500 mt-1">Costo de entrega</p>
                           </div>
                         </label>
-                      ))}
+                      ))
+                      ) : (
+                        <div className="p-6 text-center">
+                          <div className="bg-gray-100 p-4 rounded-full w-fit mx-auto mb-3">
+                            <Search className="h-8 w-8 text-gray-400" />
+                          </div>
+                          <p className="text-gray-600 text-sm">
+                            No se encontraron zonas que coincidan con "{zoneSearchQuery}"
+                          </p>
+                          <button
+                            onClick={() => setZoneSearchQuery('')}
+                            className="mt-3 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                          >
+                            Limpiar búsqueda
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

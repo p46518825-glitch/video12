@@ -121,9 +121,9 @@ export function NetflixNovelSection({ novels }: NetflixNovelSectionProps) {
         className="overflow-x-auto scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
+        <div className="flex gap-3 sm:gap-4 pb-4" style={{ minWidth: 'min-content' }}>
           {novels.map((novel) => (
-            <div key={novel.id} className="flex-shrink-0 w-64">
+            <div key={novel.id} className="flex-shrink-0 w-48 sm:w-56 md:w-60 lg:w-64 xl:w-72">
               <NovelCard novel={novel} />
             </div>
           ))}

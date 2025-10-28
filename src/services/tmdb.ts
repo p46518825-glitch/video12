@@ -238,22 +238,17 @@ class TMDBService {
   }
 
   async getMovieDetails(id: number): Promise<MovieDetails | null> {
-    // Try Spanish first, fallback to English if needed
-    try {
-      const spanishDetails = await this.fetchData<MovieDetails | null>(`/movie/${id}?language=es-ES&append_to_response=credits,videos,images`, true);
-      if (spanishDetails) {
-        return spanishDetails;
-      }
-    } catch (error) {
-      console.warn(`Spanish details not available for movie ${id}, trying English`);
+    const spanishDetails = await this.fetchData<MovieDetails | null>(`/movie/${id}?language=es-ES&append_to_response=credits,videos,images`, true);
+    if (spanishDetails && spanishDetails.overview) {
+      return spanishDetails;
     }
-    
+
     const englishDetails = await this.fetchData<MovieDetails | null>(`/movie/${id}?language=en-US&append_to_response=credits,videos,images`, true);
     if (englishDetails) {
       return englishDetails;
     }
-    
-    return null;
+
+    return spanishDetails || null;
   }
 
   async getMovieVideos(id: number): Promise<{ results: Video[] }> {
@@ -372,22 +367,17 @@ class TMDBService {
   }
 
   async getTVShowDetails(id: number): Promise<TVShowDetails | null> {
-    // Try Spanish first, fallback to English if needed
-    try {
-      const spanishDetails = await this.fetchData<TVShowDetails | null>(`/tv/${id}?language=es-ES&append_to_response=credits,videos,images`, true);
-      if (spanishDetails) {
-        return spanishDetails;
-      }
-    } catch (error) {
-      console.warn(`Spanish details not available for TV show ${id}, trying English`);
+    const spanishDetails = await this.fetchData<TVShowDetails | null>(`/tv/${id}?language=es-ES&append_to_response=credits,videos,images`, true);
+    if (spanishDetails && spanishDetails.overview) {
+      return spanishDetails;
     }
-    
+
     const englishDetails = await this.fetchData<TVShowDetails | null>(`/tv/${id}?language=en-US&append_to_response=credits,videos,images`, true);
     if (englishDetails) {
       return englishDetails;
     }
-    
-    return null;
+
+    return spanishDetails || null;
   }
 
   async getTVShowVideos(id: number): Promise<{ results: Video[] }> {

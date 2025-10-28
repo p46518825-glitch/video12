@@ -142,7 +142,7 @@ export function NovelCard({ novel }: NovelCardProps) {
           <img
             src={getNovelImage(novel)}
             alt={novel.titulo}
-            className={`w-full h-80 object-cover transition-all duration-200 ${
+            className={`w-full h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 object-cover transition-all duration-200 ${
               isHovered ? 'scale-102' : ''
             }`}
             onError={(e) => {
