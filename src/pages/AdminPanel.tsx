@@ -1041,22 +1041,6 @@ export function AdminPanel() {
                   <h3 className="text-lg font-semibold text-gray-900">Acciones del Sistema</h3>
                   <div className="space-y-3">
                     <button
-                      onClick={handleExport}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar Configuración
-                    </button>
-
-                    <button
-                      onClick={() => setShowImportModal(true)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Importar Configuración
-                    </button>
-
-                    <button
                       onClick={handleFullBackupExport}
                       className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-lg"
                     >
